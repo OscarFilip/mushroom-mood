@@ -1,0 +1,19 @@
+@startuml
+title Next.js Authentication Flow
+
+actor User
+participant "Login Page\n(app/login/page.tsx)" as LoginPage
+participant "Auth API Route\n(app/api/auth/login/route.ts)" as AuthApi
+participant "Auth Service" as AuthService
+database "Session Store" as SessionStore
+
+User -> LoginPage: Submit email and password
+LoginPage -> AuthApi: POST /api/auth/login
+AuthApi -> AuthService: Validate credentials
+AuthService -> SessionStore: Create session
+SessionStore --> AuthService: Session ID
+AuthService --> AuthApi: Auth result + session cookie
+AuthApi --> LoginPage: 200 OK
+LoginPage --> User: Redirect to dashboard
+
+@enduml
