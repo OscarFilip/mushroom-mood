@@ -1,0 +1,65 @@
+name: Render PlantUML
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Only PlantUML source changes should retrigger rendering.
+      - 'docs/uml/*.puml'
+      - '.github/workflows/plantuml.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Render PlantUML diagrams to SVG
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t diagrams < <(find docs/uml -maxdepth 1 -type f -name '*.puml' | sort)
+
+          if [ "${#diagrams[@]}" -eq 0 ]; then
+            echo "No PlantUML files found in docs/uml" >&2
+            exit 1
+          fi
+
+          mkdir -p docs/uml/out
+          find docs/uml/out -maxdepth 1 -type f -name '*.svg' -delete
+
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            plantuml/plantuml:latest \
+            -failfast2 \
+            -tsvg \
+            -o out \
+            "${diagrams[@]}"
+
+      - name: Commit generated SVGs when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # This workflow only triggers on .puml changes, so committing SVG output will not loop.
+          if [ -z "$(git status --porcelain -- docs/uml/out)" ]; then
+            echo "No rendered diagram changes to commit"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/uml/out
+          git commit -m "docs: update PlantUML SVGs [skip plantuml]"
+          git push
