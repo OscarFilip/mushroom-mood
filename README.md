@@ -43,6 +43,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - The source `.puml` files are the source of truth. Avoid editing generated SVG files manually.
 - Add a new diagram by creating a `.puml` file in `docs/uml/`, then reference the matching SVG from Markdown with a relative path such as `![Example](./uml/out/example.svg)`.
 - The GitHub Actions workflow in `.github/workflows/plantuml.yml` runs on pushes to `main` and on manual dispatch, renders all `.puml` files in `docs/uml/` to SVG using the official PlantUML Docker image, and commits updated SVG output only when the generated files change.
+- The project documentation entry point is `docs/README.md`, with separate pages for feature flows and architecture notes.
 
 ### Local VS Code preview
 
@@ -57,7 +58,7 @@ Quick setup for a new contributor:
 
 1. Open the repository in VS Code.
 2. Install the recommended PlantUML extension if VS Code prompts for it.
-3. Open a file such as `docs/uml/auth-flow.puml`.
+3. Open a file such as `docs/uml/feature-auth-flow.puml`.
 4. Run `PlantUML: Preview Current Diagram` from the Command Palette.
 5. If the preview does not appear immediately, reload the VS Code window once and try again.
 
