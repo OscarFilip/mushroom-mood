@@ -1,11 +1,20 @@
 # Architecture
 
-This repository keeps PlantUML source files in `docs/uml/` and commits generated SVG output from `docs/uml/out/` so diagrams render directly in GitHub Markdown.
+This page is for technical structure and implementation diagrams.
 
-## Authentication Flow
+## What belongs here
 
-The example below shows a simple login flow for a Next.js application with an App Router page, an API route, and a backing auth service.
+- Page and route structure
+- Service and repository boundaries
+- External API integration design
+- Data flow between app layers
 
-![Auth flow](./uml/out/auth-flow.svg)
+## Current status
 
-Update [docs/uml/auth-flow.puml](./uml/auth-flow.puml) to change the diagram source. The GitHub Actions workflow regenerates the SVG after pushes to `main`.
+The repository currently has a feature-flow example in [feature-flows.md](./feature-flows.md). Add architecture diagrams here as the implementation design becomes more concrete.
+
+Suggested next diagrams:
+
+- `architecture-weather-data-fetch.puml`
+- `architecture-rain-history.puml`
+- `architecture-app-layers.puml`

@@ -1,5 +1,5 @@
 @startuml
-title Next.js Authentication Flow
+title Next.js Authentication Feature Flow
 
 actor User
 participant "Login Page\n(app/login/page.tsx)" as LoginPage
