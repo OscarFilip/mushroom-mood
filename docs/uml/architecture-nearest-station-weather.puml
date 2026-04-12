@@ -1,0 +1,47 @@
+@startuml architecture-nearest-station-weather
+title Nearest Station Weather Architecture Flow
+
+actor User
+participant "Dashboard Page" as Dashboard
+participant "Weather Data Route" as Route
+participant "Weather Service" as Service
+database "Weather Station Repository" as StationRepo
+database "Weather Data Repository" as DataRepo
+participant "External Weather API" as ExternalApi
+participant "Station Refresh Job" as RefreshJob
+
+User -> Dashboard
+Dashboard -> Route: Request weather for coordinates
+Route -> Service: Get weather for location
+
+Service -> StationRepo: Get station catalog
+StationRepo --> Service: Station catalog
+
+alt Station catalog missing or stale
+  Service -> ExternalApi: Fetch station catalog
+  ExternalApi --> Service: Station catalog
+  Service -> StationRepo: Store or update station catalog
+  StationRepo --> Service: Station catalog
+end
+
+Service -> Service: Find nearest station
+Service -> DataRepo: Check cached weather data for station and fixed date range
+
+alt Required weather dates available locally
+  DataRepo --> Service: Weather data
+else Required weather dates are missing or stale
+  Service -> ExternalApi: Fetch missing weather data
+  ExternalApi --> Service: Weather data
+  Service -> DataRepo: Store or update weather data
+  DataRepo --> Service: Complete weather data
+end
+
+Service --> Route: Weather data
+Route --> Dashboard: Response
+Dashboard --> User: Render charts
+
+RefreshJob -> ExternalApi: Fetch station catalog
+ExternalApi --> RefreshJob: Station catalog
+RefreshJob -> StationRepo: Update station catalog
+
+@enduml

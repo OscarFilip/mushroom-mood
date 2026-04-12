@@ -1,0 +1,27 @@
+@startuml feature-nearest-station-weather-flow
+title Nearest Station Weather Feature Flow
+
+actor User
+participant "Dashboard" as Dashboard
+participant "App" as App
+
+User -> Dashboard: Choose map position or enter coordinates
+
+Dashboard -> App: Request weather data for selected position and fixed date range
+
+alt Station list missing or stale
+  App -> App: Refresh available weather stations
+end
+
+App -> App: Find nearest weather station
+App -> App: Get weather data for nearest station and fixed date range
+
+alt Weather data found
+  App --> Dashboard: Return weather data
+  Dashboard --> User: Show charts and weather details
+else Weather data unavailable
+  App --> Dashboard: Return error or empty result
+  Dashboard --> User: Show error or empty state
+end
+
+@enduml
