@@ -11,9 +11,18 @@ This folder is the planning and technical documentation home for the project.
 
 ## Diagram naming convention
 
-- Use `feature-<name>-flow.puml` for product or user flows.
-- Use `architecture-<name>.puml` for technical structure diagrams.
+- Use `feature-<name>.puml` for product or user flows.
+- Use `architecture-<name>.puml` for current-state technical structure diagrams.
+- Use `architecture-<name>-target.puml` for planned or in-progress target-state technical structure diagrams.
 - Keep one diagram focused on one feature or subsystem.
+
+## Diagram lifecycle convention
+
+- Treat the current-state architecture diagram as the source of truth for what is implemented now.
+- Use a separate target-state architecture diagram while a design is planned or in progress.
+- Add a short status note such as `Planned` or `In Progress` to target-state diagrams.
+- When the implementation is complete and stable, update the current-state diagram to match reality.
+- Then remove the target-state diagram to avoid stale documentation.
 
 ## When to add which diagram
 
@@ -24,5 +33,5 @@ This folder is the planning and technical documentation home for the project.
 
 1. Write or update the `.puml` source in `docs/uml/`.
 2. Preview it locally in VS Code.
-3. Add or update the matching Markdown page in `docs/`.
+3. Add or update the matching Markdown page in `docs/` and embed the generated SVG from `docs/uml/out/`.
 4. Push to `main` and let GitHub Actions regenerate the SVG output.

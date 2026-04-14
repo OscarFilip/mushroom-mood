@@ -2,46 +2,42 @@
 title Nearest Station Weather Architecture Flow
 
 actor User
-participant "Dashboard Page" as Dashboard
-participant "Weather Data Route" as Route
-participant "Weather Service" as Service
-database "Weather Station Repository" as StationRepo
-database "Weather Data Repository" as DataRepo
-participant "External Weather API" as ExternalApi
-participant "Station Refresh Job" as RefreshJob
+participant "Weather History Page" as WeatherHistoryPage
+participant "WeatherHistory UI" as WeatherHistoryUi
+participant "Weather History API Route" as WeatherHistoryRoute
+participant "Rain History Service" as RainHistoryService
+participant "Weather Data Repository" as WeatherDataRepository
+participant "SMHI API Client" as SmhiApiClient
+participant "SMHI Open Data API" as SmhiOpenDataApi
 
-User -> Dashboard
-Dashboard -> Route: Request weather for coordinates
-Route -> Service: Get weather for location
+User -> WeatherHistoryPage: Open dashboard page
+WeatherHistoryPage -> WeatherHistoryUi: Render weather history feature
+User -> WeatherHistoryUi: Enter coordinates or choose preset location
+WeatherHistoryUi -> WeatherHistoryRoute: GET rainy-days with latitude and longitude
+WeatherHistoryRoute -> WeatherHistoryRoute: Validate coordinates
 
-Service -> StationRepo: Get station catalog
-StationRepo --> Service: Station catalog
+alt Coordinates are invalid
+  WeatherHistoryRoute --> WeatherHistoryUi: 400 Bad Request
+  WeatherHistoryUi --> User: Show validation error
+else Coordinates are valid
+  WeatherHistoryRoute -> RainHistoryService: getHistoricalWeatherData(lat, lon)
+  RainHistoryService -> WeatherDataRepository: Get relevant station and weather data
+  WeatherDataRepository -> SmhiApiClient: Request station catalogs and measurement data
+  SmhiApiClient -> SmhiOpenDataApi: Fetch weather data from SMHI
+  SmhiOpenDataApi --> SmhiApiClient: Station and measurement data
+  SmhiApiClient --> WeatherDataRepository: Raw weather data
+  WeatherDataRepository --> RainHistoryService: Parsed station and measurement data
 
-alt Station catalog missing or stale
-  Service -> ExternalApi: Fetch station catalog
-  ExternalApi --> Service: Station catalog
-  Service -> StationRepo: Store or update station catalog
-  StationRepo --> Service: Station catalog
+  alt At least one dataset is available
+    RainHistoryService -> RainHistoryService: Select nearest stations and build API response
+    RainHistoryService --> WeatherHistoryRoute: Rain and temperature response data
+    WeatherHistoryRoute --> WeatherHistoryUi: 200 OK JSON response
+    WeatherHistoryUi --> User: Render station info, charts, tables, and summary
+  else No dataset could be returned
+    RainHistoryService --> WeatherHistoryRoute: Retrieval failure
+    WeatherHistoryRoute --> WeatherHistoryUi: Error response
+    WeatherHistoryUi --> User: Show error state
+  end
 end
-
-Service -> Service: Find nearest station
-Service -> DataRepo: Check cached weather data for station and fixed date range
-
-alt Required weather dates available locally
-  DataRepo --> Service: Weather data
-else Required weather dates are missing or stale
-  Service -> ExternalApi: Fetch missing weather data
-  ExternalApi --> Service: Weather data
-  Service -> DataRepo: Store or update weather data
-  DataRepo --> Service: Complete weather data
-end
-
-Service --> Route: Weather data
-Route --> Dashboard: Response
-Dashboard --> User: Render charts
-
-RefreshJob -> ExternalApi: Fetch station catalog
-ExternalApi --> RefreshJob: Station catalog
-RefreshJob -> StationRepo: Update station catalog
 
 @enduml

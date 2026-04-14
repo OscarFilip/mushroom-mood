@@ -39,5 +39,5 @@ Useful scripts:
 - Source files live in `docs/uml/`.
 - Generated SVG files live in `docs/uml/out/`.
 - `.puml` files are the source of truth.
-- Preview diagrams locally in VS Code with the recommended PlantUML extension.
+- Preview diagrams locally in VS Code with the PlantUML extension.
 - GitHub Actions regenerates SVG files on pushes to `main`.
