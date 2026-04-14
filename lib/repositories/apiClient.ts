@@ -13,14 +13,15 @@ export class ApiClient {
   }
 
   async request<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    const { headers = {}, responseType = 'json', ...requestOptions } = options;
     const url = `${this.baseURL}${endpoint}`;
     const config: RequestInit = {
+      ...requestOptions,
       headers: {
         'Content-Type': 'application/json',
         ...this.defaultHeaders,
-        ...options.headers,
+        ...headers,
       },
-      ...options,
     };
 
     try {
@@ -31,7 +32,6 @@ export class ApiClient {
       }
       
       // Handle different response types
-      const responseType = options.responseType || 'json';
       if (responseType === 'text') {
         return await response.text() as T;
       }

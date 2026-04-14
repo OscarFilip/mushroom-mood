@@ -42,9 +42,10 @@ export async function GET(request: Request) {
       );
     }
     
-    if (error.message === 'No nearby weather station found') {
+    if (error.message === 'No nearby weather station found' ||
+        error.message === 'No nearby weather stations found') {
       return NextResponse.json(
-        { error: 'No nearby weather station found' },
+        { error: 'No nearby weather stations found' },
         { status: 404 }
       );
     }

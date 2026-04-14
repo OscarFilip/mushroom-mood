@@ -5,9 +5,9 @@
 global.console = {
   ...console,
   // Uncomment to ignore console.log statements in tests
-  // log: jest.fn(),
+  log: jest.fn(),
   // info: jest.fn(),
-  // warn: jest.fn(),
+  warn: jest.fn(),
   error: jest.fn(),
 };
 

@@ -21,12 +21,12 @@ alt Coordinates are invalid
   WeatherHistoryUi --> User: Show validation error
 else Coordinates are valid
   WeatherHistoryRoute -> RainHistoryService: getHistoricalWeatherData(lat, lon)
-  RainHistoryService -> WeatherDataRepository: Get relevant station and weather data
+  RainHistoryService -> WeatherDataRepository: Fetch station catalogs and measurement data
   WeatherDataRepository -> SmhiApiClient: Request station catalogs and measurement data
   SmhiApiClient -> SmhiOpenDataApi: Fetch weather data from SMHI
   SmhiOpenDataApi --> SmhiApiClient: Station and measurement data
   SmhiApiClient --> WeatherDataRepository: Raw weather data
-  WeatherDataRepository --> RainHistoryService: Parsed station and measurement data
+  WeatherDataRepository --> RainHistoryService: Active station catalogs and parsed measurements
 
   alt At least one dataset is available
     RainHistoryService -> RainHistoryService: Select nearest stations and build API response

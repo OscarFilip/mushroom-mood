@@ -6,6 +6,7 @@ This folder is the planning and technical documentation home for the project.
 
 - [Feature flows](./feature-flows.md): user-facing and product-flow diagrams that explain what the app should do.
 - [Architecture](./architecture.md): technical diagrams and notes that explain how features are implemented.
+- [Done and testing](./done-and-testing.md): the project definition of done and minimum testing expectations.
 - [PlantUML source](./uml/): `.puml` source files.
 - [Rendered diagrams](./uml/out/): generated SVG files used by Markdown docs.
 
