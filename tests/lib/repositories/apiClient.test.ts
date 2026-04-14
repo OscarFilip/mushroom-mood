@@ -1,8 +1,8 @@
-const { ApiClient } = require('@/lib/repositories/apiClient');
+import { ApiClient } from '@/lib/repositories/apiClient';
 
 describe('ApiClient', () => {
   beforeEach(() => {
-    global.fetch = jest.fn();
+    global.fetch = jest.fn() as jest.Mock;
   });
 
   afterEach(() => {
@@ -10,7 +10,7 @@ describe('ApiClient', () => {
   });
 
   it('merges default headers and request headers for JSON requests', async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
@@ -38,16 +38,13 @@ describe('ApiClient', () => {
   });
 
   it('returns text when the response type is text', async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       text: jest.fn().mockResolvedValue('plain response'),
     });
 
     const client = new ApiClient('https://example.test');
-
-    const result = await client.getText('/export.csv', {
-      Accept: 'text/csv',
-    });
+    const result = await client.getText('/export.csv', { Accept: 'text/csv' });
 
     expect(global.fetch).toHaveBeenCalledWith('https://example.test/export.csv', {
       method: 'GET',
@@ -60,7 +57,7 @@ describe('ApiClient', () => {
   });
 
   it('throws a descriptive error when the response is not ok', async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 503,
       statusText: 'Service Unavailable',
@@ -72,7 +69,7 @@ describe('ApiClient', () => {
   });
 
   it('serializes JSON bodies for post requests', async () => {
-    global.fetch.mockResolvedValue({
+    (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({ created: true }),
     });
@@ -80,9 +77,7 @@ describe('ApiClient', () => {
     const client = new ApiClient('https://example.test');
     const payload = { stationId: '123', enabled: true };
 
-    const result = await client.post('/settings', payload, {
-      'X-Test': 'true',
-    });
+    const result = await client.post('/settings', payload, { 'X-Test': 'true' });
 
     expect(global.fetch).toHaveBeenCalledWith('https://example.test/settings', {
       method: 'POST',

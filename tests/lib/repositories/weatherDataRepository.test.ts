@@ -8,8 +8,8 @@ jest.mock('@/lib/repositories/apiClient', () => ({
   })),
 }));
 
-const { WeatherStation } = require('@/lib/models/WeatherStation');
-const { WeatherDataRepository } = require('@/lib/repositories/weatherDataRepository');
+import { WeatherStation } from '@/lib/models/WeatherStation';
+import { WeatherDataRepository } from '@/lib/repositories/weatherDataRepository';
 
 describe('WeatherDataRepository', () => {
   beforeEach(() => {
@@ -77,12 +77,12 @@ describe('WeatherDataRepository', () => {
     ].join('\n'));
 
     const repository = new WeatherDataRepository();
-    const station = new WeatherStation({ key: 'temp-station' });
+    const station = new WeatherStation({ key: 'temp-station' }) as WeatherStation & { temperatureMeasurements?: Array<[Date, number]> };
 
     const result = await repository.getDailyAverageTemperatureLast3MonthsAsync(station);
 
     expect(mockGetText).toHaveBeenCalledWith('/version/latest/parameter/2/station/temp-station/period/latest-months/data.csv');
-    expect(result.temperatureMeasurements).toEqual([
+    expect((result as WeatherStation & { temperatureMeasurements?: Array<[Date, number]> }).temperatureMeasurements).toEqual([
       [new Date('2026-02-01T00:00:00.000Z'), 4.5],
       [new Date('2026-03-10T00:00:00.000Z'), 7.1],
     ]);
