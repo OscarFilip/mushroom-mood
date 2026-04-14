@@ -2,13 +2,19 @@
 
 This page collects diagrams that explain user-facing or business-facing behavior.
 
-## Authentication flow
+## Available feature flows
 
-This example shows the login flow from user input to session creation and redirect.
+### Nearest station weather feature flow
 
-![Auth flow](./uml/out/feature-auth-flow.svg)
+This diagram shows the user-facing weather history flow from opening the feature to requesting data and seeing either results or an error state.
 
-Source: [feature-auth-flow.puml](./uml/feature-auth-flow.puml)
+Rendered SVG: generated into `./uml/out/feature-nearest-station-weather.svg`
+
+![Nearest station weather feature flow](./uml/out/feature-nearest-station-weather.svg)
+
+Source: [feature-nearest-station-weather.puml](./uml/feature-nearest-station-weather.puml)
+
+This feature flow complements the architecture diagrams in [architecture.md](./architecture.md), but stays focused on user-visible behavior instead of internal technical responsibilities.
 
 ## What belongs here
 

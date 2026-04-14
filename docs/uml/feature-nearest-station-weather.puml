@@ -1,0 +1,25 @@
+@startuml feature-nearest-station-weather-flow
+title Nearest Station Weather Feature Flow
+
+actor User
+participant "Weather History View" as WeatherHistoryView
+participant "Weather History API" as WeatherHistoryApi
+participant "Rain History Service" as RainHistoryService
+
+User -> WeatherHistoryView: Open weather history feature
+User -> WeatherHistoryView: Enter coordinates or choose preset location
+
+WeatherHistoryView -> WeatherHistoryApi: Request weather history for coordinates
+WeatherHistoryApi -> RainHistoryService: Get historical weather data
+
+alt Weather data found
+  RainHistoryService --> WeatherHistoryApi: Weather history data
+  WeatherHistoryApi --> WeatherHistoryView: Response data
+  WeatherHistoryView --> User: Show station info, charts, tables, and summary
+else Weather data unavailable
+  RainHistoryService --> WeatherHistoryApi: Error or empty result
+  WeatherHistoryApi --> WeatherHistoryView: Error response
+  WeatherHistoryView --> User: Show error or empty state
+end
+
+@enduml
