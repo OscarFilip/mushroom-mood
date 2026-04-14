@@ -1,4 +1,4 @@
-const { validateCoordinates } = require('@/lib/utils/validation');
+import { validateCoordinates } from '@/lib/utils/validation';
 
 describe('validateCoordinates', () => {
   it('does not throw for valid coordinates', () => {

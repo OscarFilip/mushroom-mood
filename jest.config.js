@@ -9,16 +9,14 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   
   // Test environment
   testEnvironment: 'jest-environment-node',
   
   // Test file patterns
   testMatch: [
-    '<rootDir>/tests/**/*.test.js',
     '<rootDir>/tests/**/*.test.ts',
-    '<rootDir>/**/__tests__/**/*.js',
     '<rootDir>/**/__tests__/**/*.ts'
   ],
   

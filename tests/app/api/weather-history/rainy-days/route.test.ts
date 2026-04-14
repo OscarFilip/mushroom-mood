@@ -2,8 +2,8 @@ jest.mock('@/lib/services/rainHistoryService', () => ({
   getHistoricalWeatherData: jest.fn(),
 }));
 
-const { GET } = require('@/app/api/weather-history/rainy-days/route');
-const { getHistoricalWeatherData } = require('@/lib/services/rainHistoryService');
+import { GET } from '@/app/api/weather-history/rainy-days/route';
+import { getHistoricalWeatherData } from '@/lib/services/rainHistoryService';
 
 describe('GET /api/weather-history/rainy-days', () => {
   beforeEach(() => {
@@ -46,7 +46,8 @@ describe('GET /api/weather-history/rainy-days', () => {
       },
       temperatureStation: null,
     };
-    getHistoricalWeatherData.mockResolvedValue(serviceResponse);
+
+    (getHistoricalWeatherData as jest.Mock).mockResolvedValue(serviceResponse);
     const request = new Request('http://localhost/api/weather-history/rainy-days?latitude=57.1134&longitude=12.7732');
 
     const response = await GET(request);
@@ -58,7 +59,7 @@ describe('GET /api/weather-history/rainy-days', () => {
   });
 
   it('returns 404 when no nearby weather station is available', async () => {
-    getHistoricalWeatherData.mockRejectedValue(new Error('No nearby weather stations found'));
+    (getHistoricalWeatherData as jest.Mock).mockRejectedValue(new Error('No nearby weather stations found'));
     const request = new Request('http://localhost/api/weather-history/rainy-days?latitude=57.1134&longitude=12.7732');
 
     const response = await GET(request);
@@ -69,7 +70,7 @@ describe('GET /api/weather-history/rainy-days', () => {
   });
 
   it('returns 500 when no weather stations are available', async () => {
-    getHistoricalWeatherData.mockRejectedValue(new Error('No weather stations available'));
+    (getHistoricalWeatherData as jest.Mock).mockRejectedValue(new Error('No weather stations available'));
     const request = new Request('http://localhost/api/weather-history/rainy-days?latitude=57.1134&longitude=12.7732');
 
     const response = await GET(request);
@@ -80,7 +81,7 @@ describe('GET /api/weather-history/rainy-days', () => {
   });
 
   it('returns 500 for unexpected internal errors', async () => {
-    getHistoricalWeatherData.mockRejectedValue(new Error('Unexpected failure'));
+    (getHistoricalWeatherData as jest.Mock).mockRejectedValue(new Error('Unexpected failure'));
     const request = new Request('http://localhost/api/weather-history/rainy-days?latitude=57.1134&longitude=12.7732');
 
     const response = await GET(request);

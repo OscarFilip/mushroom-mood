@@ -1,6 +1,6 @@
 # Unit Testing Guide for C# Developers
 
-This guide explains how unit testing works in this Next.js JavaScript project, with comparisons to C#/.NET testing practices.
+This guide explains how unit testing works in this Next.js TypeScript project, with comparisons to C#/.NET testing practices.
 
 ## 🗂️ **Folder Structure**
 
@@ -13,20 +13,20 @@ This guide explains how unit testing works in this Next.js JavaScript project, w
 ├── tests/                         # Test files
 │   ├── lib/
 │   │   ├── repositories/
-│   │   │   ├── weatherDataRepository.test.js
-│   │   │   └── weatherDataRepository.advanced.test.js
+│   │   │   ├── weatherDataRepository.test.ts
+│   │   │   └── apiClient.test.ts
 │   │   ├── services/
 │   │   └── utils/
 │   ├── helpers/
-│   │   └── testHelpers.js        # Test utilities (like C# test helpers)
-│   └── setup.js                  # Global test setup
+│   │   └── testHelpers.ts        # Test utilities (like C# test helpers)
+│   └── setup.ts                  # Global test setup
 ├── jest.config.js                # Test configuration
 └── package.json                  # Test scripts
 ```
 
 ## 🧪 **Testing Framework Comparison**
 
-| C#/.NET | JavaScript/Jest | Purpose |
+| C#/.NET | TypeScript/Jest | Purpose |
 |---------|-----------------|---------|
 | `[TestClass]` | `describe()` | Test class/group |
 | `[TestMethod]` | `it()` or `test()` | Individual test |
@@ -59,7 +59,7 @@ npm run test:ci
 npm test -- weatherDataRepository
 
 # Run tests in a specific file
-npm test -- tests/lib/repositories/weatherDataRepository.test.js
+npm test -- tests/lib/repositories/weatherDataRepository.test.ts
 
 # Run tests with specific name pattern
 npm test -- --testNamePattern="should return"
@@ -67,8 +67,8 @@ npm test -- --testNamePattern="should return"
 
 ## 📝 **Test Structure Example**
 
-### **JavaScript/Jest**
-```javascript
+### **TypeScript/Jest**
+```typescript
 describe('WeatherDataRepository', () => {
   let repository;
 
@@ -135,8 +135,8 @@ public class WeatherDataRepositoryTests
 
 ## 🔧 **Mocking (Similar to Moq in C#)**
 
-### **JavaScript/Jest**
-```javascript
+### **TypeScript/Jest**
+```typescript
 it('should call external API', async () => {
   // Arrange
   const mockFetch = jest.fn().mockResolvedValue({
@@ -178,7 +178,7 @@ After running `npm run test:coverage`, you'll see:
 ---------------------------------|---------|----------|---------|---------|-------------------
 File                             | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 ---------------------------------|---------|----------|---------|---------|-------------------
-weatherDataRepository.js        |     100 |      100 |     100 |     100 | 
+weatherDataRepository.ts        |     100 |      100 |     100 |     100 | 
 ```
 
 - **% Stmts**: Statement coverage
@@ -188,9 +188,9 @@ weatherDataRepository.js        |     100 |      100 |     100 |     100 |
 
 ## 🎨 **Test Helpers and Utilities**
 
-Use the helper functions in `tests/helpers/testHelpers.js`:
+Use the helper functions in `tests/helpers/testHelpers.ts`:
 
-```javascript
+```typescript
 import { createMockWeatherStation, testCoordinates } from '@/tests/helpers/testHelpers';
 
 it('should handle mock data', () => {
@@ -214,7 +214,7 @@ it('should handle mock data', () => {
 - Use meaningful test values
 
 ### **3. Async Testing**
-```javascript
+```typescript
 // Good - properly handle async
 it('should handle async operations', async () => {
   const result = await repository.findNearestStation(40, -74);
@@ -242,7 +242,7 @@ it('should handle async operations', () => {
 4. Use "Debug Test" from command palette
 
 ### **Console Output**
-```javascript
+```typescript
 it('should debug test', () => {
   console.log('Debug info:', someValue);
   expect(someValue).toBeDefined();
@@ -255,7 +255,7 @@ it('should debug test', () => {
 2. **Green**: Write minimal code to make it pass
 3. **Refactor**: Improve the code while keeping tests green
 
-```javascript
+```typescript
 // 1. RED - Write failing test first
 it('should calculate distance between stations', () => {
   const distance = station1.distanceTo(station2);
@@ -266,4 +266,4 @@ it('should calculate distance between stations', () => {
 // 3. REFACTOR - Improve implementation
 ```
 
-This testing setup provides the same level of confidence and practices you're used to in C#, adapted for the JavaScript ecosystem!
+This testing setup provides the same level of confidence and practices you're used to in C#, adapted for the TypeScript ecosystem!
