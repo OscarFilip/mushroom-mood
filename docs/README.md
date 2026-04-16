@@ -7,6 +7,7 @@ This folder is the planning and technical documentation home for the project.
 - [Feature flows](./feature-flows.md): user-facing and product-flow diagrams that explain what the app should do.
 - [Architecture](./architecture.md): technical diagrams and notes that explain how features are implemented.
 - [Done and testing](./done-and-testing.md): the project definition of done and minimum testing expectations.
+- [Plans](./plans/README.md): planning, decision-log, execution-log, and review artifacts for feature work.
 - [PlantUML source](./uml/): `.puml` source files.
 - [Rendered diagrams](./uml/out/): generated SVG files used by Markdown docs.
 
@@ -36,3 +37,9 @@ This folder is the planning and technical documentation home for the project.
 2. Preview it locally in VS Code.
 3. Add or update the matching Markdown page in `docs/` and embed the generated SVG from `docs/uml/out/`.
 4. Push to `main` and let GitHub Actions regenerate the SVG output.
+
+## Working with agents
+
+Agent-specific workflow rules live in the repository root [AGENTS.md](../AGENTS.md).
+
+Planning files in [plans/README.md](./plans/README.md) are shared project artifacts intended to help both humans and tools follow the same implementation process.
