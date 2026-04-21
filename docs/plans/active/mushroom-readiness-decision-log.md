@@ -181,3 +181,85 @@ The feature is strategically important, but the exact submission, review, approv
 - `docs/uml/feature-mushroom-probability.puml`
 - Future permission and admin-flow planning
 - Later architecture-flow work
+
+---
+
+## Decision
+
+The first implementation slice should be the start-page readiness flow: manual or preset spot selection, single-species selection from a curated catalog, readiness lookup, and transparent result rendering.
+
+## Why
+
+This is the smallest useful end-to-end path that answers the core user question without depending on saved-spot persistence, admin flows, or advanced explanation features.
+
+## Alternatives considered
+
+- Start with species catalog browsing before readiness lookup
+- Start with saved-spot persistence before the first readiness result
+- Start with deep evidence views before the main result experience
+
+## Tradeoffs
+
+- This gives fast product validation against the core question.
+- It requires temporary restraint on adjacent features that may feel important but are not necessary for the first useful slice.
+
+## Impacted files or areas
+
+- `app/page.tsx`
+- `app/features/`
+- `app/api/`
+- `lib/services/`
+- `docs/plans/active/mushroom-readiness-plan.md`
+
+---
+
+## Decision
+
+The first curated species set for implementation is `Boletus edulis`, `Boletus reticulatus`, `Cantharellus cibarius`, and `Craterellus tubaeformis`.
+
+## Why
+
+This gives the first slice a small but meaningful set of recognizable target species without expanding the species catalog before the readiness flow is proven.
+
+## Alternatives considered
+
+- Start with only one species
+- Add a larger mixed catalog before implementation
+
+## Tradeoffs
+
+- Four species are enough to exercise the selector and species-specific rules.
+- The catalog remains intentionally small, so users will not yet see broader species coverage.
+
+## Impacted files or areas
+
+- Curated species catalog source for the first slice
+- Start-page species selector
+- First service and route tests
+
+---
+
+## Decision
+
+The initial readiness-label vocabulary is `very-likely-worth-checking`, `worth-checking`, `possible-but-uncertain`, `unlikely-now`, `very-unlikely-right-now`, and `unknown`, while seasonal state remains a separate field.
+
+## Why
+
+These labels give a clear practical answer without mixing seasonal state into readiness and without forcing false precision. They also distinguish between ordinary support and very strong support, and between ordinary low support and very strong reasons not to go now.
+
+## Alternatives considered
+
+- Binary yes or no labels only
+- More granular readiness steps before implementation
+- Using `out-of-season` as a readiness label
+
+## Tradeoffs
+
+- The labels are simple enough for the first slice and can be explained clearly in the UI.
+- Some wording may still evolve later, but the API and UI now have a stable first vocabulary.
+
+## Impacted files or areas
+
+- Readiness API response shape
+- Start-page result rendering
+- Explanation copy and tests

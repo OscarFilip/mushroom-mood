@@ -6,12 +6,12 @@ Define the product and planning model for a spot-first mushroom readiness applic
 
 ## Goal
 
-Create a stable planning basis for revising the feature-flow UMLs and the first target-state architecture work. The app should answer whether a chosen spot for a chosen species is worth checking now, using transparent factors and a curated species catalog.
+Create a stable planning basis for revising the feature-flow UMLs, the first target-state architecture work, and the first implementation slice. The app should answer whether a chosen spot for a chosen species is worth checking now, using transparent factors and a curated species catalog.
 
 ## Scope
 
 - In scope: spot-first product framing, calculation-factor framing, output format, curated species strategy, saved-spot design direction, and deferred expert-workflow note.
-- In scope: decisions needed to revise feature-flow diagrams and define an initial target-state architecture.
+- In scope: decisions needed to revise feature-flow diagrams, define an initial target-state architecture, and specify the first implementation slice.
 - Out of scope: implementation details for the expert-input workflow, code changes, and final factor weighting formulas.
 
 ## Context
@@ -38,6 +38,7 @@ Key planning context from discussion:
 - The planning model clearly reflects a spot-first app instead of a generic weather dashboard.
 - The main result format is defined as readiness label plus probability plus separate confidence.
 - The factor model is clear enough to revise the feature-flow UMLs.
+- The first implementation slice is narrow enough to build end to end without reopening global product decisions.
 - Deferred design areas are explicitly recorded so they are not mistaken for settled decisions.
 
 ## Proposed approach
@@ -54,6 +55,24 @@ Revise the planned feature flows so they center on:
 
 The expert-input feature remains planned, but its detailed flow should be marked as intentionally deferred.
 
+### First implementation slice
+
+The first slice should implement the smallest end-to-end version of the core user question:
+
+- user enters coordinates or chooses a preset spot on the start page
+- user selects one species from the first curated in-app catalog: `Boletus edulis`, `Boletus reticulatus`, `Cantharellus cibarius`, or `Craterellus tubaeformis`
+- app requests one readiness result from a dedicated readiness API route
+- app renders readiness label, probability, confidence, seasonal state, and short explanation summary
+- app renders loading, validation, error, and insufficient-data states
+
+The first slice should explicitly exclude:
+
+- saved-spot persistence and account-linked spot management
+- species management UI and admin-only inclusion tools
+- contributor and expert workflow
+- deeper weather-evidence page behavior beyond linking or placeholder navigation
+- final factor tuning and advanced explanation breakdowns
+
 ### Architecture impact
 
 The target-state architecture should cover the following domains:
@@ -66,9 +85,84 @@ The target-state architecture should cover the following domains:
 - readiness calculation and confidence calculation
 - species management and expert/admin algorithm input handling
 
+For the first implementation slice, the expected code boundaries are:
+
+- `app/page.tsx` as the entry page that hosts the first readiness experience
+- a new mushroom-readiness UI feature module under `app/features/`
+- a new API route for readiness lookup, likely `app/api/mushroom-readiness/route.ts`
+- a new service module, likely `lib/services/mushroomReadinessService.ts`
+- a small curated species catalog source for the first slice, likely static and repo-local
+- reuse or adaptation of existing weather-history retrieval as weather evidence input where practical
+
 ### Testing approach
 
-No code tests are in scope yet. Planning quality should be reviewed against the approved decisions before architecture planning starts.
+When this slice moves to implementation, add route and service tests first. UI tests can stay lighter if the core request and response handling is covered by route and service tests.
+
+### First-slice contract sketch
+
+Suggested request shape:
+
+```text
+GET /api/mushroom-readiness?latitude=<number>&longitude=<number>&species=<species-id>
+```
+
+Suggested success response shape:
+
+```json
+{
+	"spot": {
+		"latitude": 57.1134,
+		"longitude": 12.7732
+	},
+	"species": {
+		"id": "chanterelle",
+		"displayName": "Chanterelle"
+	},
+	"result": {
+		"readinessLabel": "worth-checking",
+		"probabilityPercent": 68,
+		"confidencePercent": 54,
+		"seasonalState": "in-season"
+	},
+	"explanation": {
+		"summary": "Recent rain supports fruiting, but confidence is limited by sparse seasonal evidence.",
+		"weatherSupport": "supported",
+		"seasonalSupport": "partial",
+		"speciesTimingSupport": "supported"
+	},
+	"limitations": []
+}
+```
+
+Suggested degraded response shape:
+
+```json
+{
+	"spot": {
+		"latitude": 57.1134,
+		"longitude": 12.7732
+	},
+	"species": {
+		"id": "chanterelle",
+		"displayName": "Chanterelle"
+	},
+	"result": {
+		"readinessLabel": "unknown",
+		"probabilityPercent": null,
+		"confidencePercent": 22,
+		"seasonalState": "unknown"
+	},
+	"explanation": {
+		"summary": "Weather data was available, but seasonal evidence was insufficient.",
+		"weatherSupport": "supported",
+		"seasonalSupport": "missing",
+		"speciesTimingSupport": "supported"
+	},
+	"limitations": [
+		"seasonal-evidence-unavailable"
+	]
+}
+```
 
 ## Implementation steps
 
@@ -76,6 +170,8 @@ No code tests are in scope yet. Planning quality should be reviewed against the 
 2. Revise the planned feature-flow UMLs to match the spot-first mushroom readiness model.
 3. Use the revised feature flows as the basis for target-state architecture planning.
 4. Choose the first implementation slice from the planned boundaries.
+5. Confirm the route shape, result shape, first species catalog, and initial readiness labels.
+6. Switch to implementation stage and build the slice end to end.
 
 ## Risks
 
@@ -84,9 +180,44 @@ No code tests are in scope yet. Planning quality should be reviewed against the 
 
 ## Open questions
 
-- What exact readiness labels should be used in the UI text?
 - How should confidence be rendered numerically and textually?
 - What exact restricted UI should be used for species inclusion and later expert/admin workflow?
+
+## Accepted defaults for first implementation slice
+
+### Curated species set
+
+- `boletus-edulis` - `Boletus edulis`
+- `boletus-reticulatus` - `Boletus reticulatus`
+- `cantharellus-cibarius` - `Cantharellus cibarius`
+- `craterellus-tubaeformis` - `Craterellus tubaeformis`
+
+### Readiness labels
+
+- `very-likely-worth-checking` - current conditions strongly support checking now
+- `worth-checking` - strong enough support to justify a trip now
+- `possible-but-uncertain` - some support exists, but confidence or signal strength is limited
+- `unlikely-now` - current conditions do not support checking now
+- `very-unlikely-right-now` - current conditions strongly argue against checking now
+- `unknown` - data is too incomplete for a meaningful readiness result
+
+### Seasonal state labels
+
+- `in-season`
+- `shoulder-season`
+- `out-of-season`
+- `unknown`
+
+## Implementation handoff trigger
+
+Planning should hand over to implementation when these slice-local decisions are accepted:
+
+- the first API route path and request shape
+- the first result payload shape
+- the first curated species set for implementation
+- the first readiness-label vocabulary for UI and API use
+
+Those decisions are now defined in this file, and the active handoff has been moved to implementation. Continue implementation from `docs/plans/active/current-work.md` until the first slice is built and ready for review.
 
 ## Definition of done
 
@@ -94,4 +225,4 @@ No code tests are in scope yet. Planning quality should be reviewed against the 
 - Feature-flow revisions align with the settled product direction.
 - The target-state architecture diagram reflects the same product boundaries and deferred decisions.
 - Deferred decisions are documented explicitly.
-- The project is ready to move from feature-flow planning into architecture planning.
+- The project is ready to move from planning into implementation for the first slice.

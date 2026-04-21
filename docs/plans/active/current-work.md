@@ -8,7 +8,7 @@ Update this file before asking an agent to continue work from repository context
 
 ## Stage
 
-`planning`
+`implementation`
 
 Allowed values:
 
@@ -26,7 +26,7 @@ Allowed values:
 
 ## Expected next action
 
-Overall product and target-architecture planning is complete enough for a checkpoint commit. Next, decide the first implementation slice and continue with feature-specific planning around spot and species selection, readiness lookup, and transparent result rendering.
+Implement the first mushroom-readiness slice in the app: build the start-page spot input, the first curated species selector, a readiness API route, a readiness service, and result rendering with loading, validation, error, and insufficient-data states.
 
 Do not leave this blank if you want minimal-prompt continuation.
 
@@ -37,3 +37,5 @@ Do not leave this blank if you want minimal-prompt continuation.
 - Treat seasonal state separately from readiness label.
 - Treat saved spot status as user organization only, not a probability factor.
 - Keep expert-input and admin algorithm-adjustment as planned features, but defer detailed workflow design.
+- First curated species set: `boletus-edulis`, `boletus-reticulatus`, `cantharellus-cibarius`, `craterellus-tubaeformis`.
+- Initial readiness labels: `very-likely-worth-checking`, `worth-checking`, `possible-but-uncertain`, `unlikely-now`, `very-unlikely-right-now`, `unknown`.
