@@ -1,0 +1,31 @@
+@startuml feature-weather-page
+title Weather Page Feature Flow
+
+' Status: Planned
+
+actor User
+participant "Weather Page" as WeatherPage
+participant "Evidence View" as EvidenceView
+participant "Spot and Species Controls" as SpotAndSpeciesControls
+
+User -> WeatherPage: Open weather page
+WeatherPage --> User: Show readiness evidence for the current spot and species
+
+User -> EvidenceView: Inspect precipitation, temperature, seasonal state, and confidence
+EvidenceView --> User: Show charts, tables, and explanation for the result
+
+alt User wants to compare or change context
+  User -> SpotAndSpeciesControls: Change spot or species
+  SpotAndSpeciesControls --> WeatherPage: Updated spot or species selection
+  WeatherPage --> User: Refresh evidence for the new context
+else User keeps the same context
+  WeatherPage --> User: Keep the deeper evidence view available
+end
+
+alt Supporting data is available
+  EvidenceView --> User: Show how recent conditions and seasonal patterns influence readiness
+else Supporting data is sparse or unavailable
+  EvidenceView --> User: Show low-confidence explanation and what data is missing
+end
+
+@enduml

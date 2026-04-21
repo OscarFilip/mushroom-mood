@@ -1,0 +1,22 @@
+@startuml feature-account-page
+title Account Page Feature Flow
+
+' Status: Planned
+
+actor User
+participant "Account Page" as AccountPage
+participant "Account Sections" as AccountSections
+
+User -> AccountPage: Open account page
+AccountPage --> User: Show account overview and available account actions
+
+alt Account features are available for the current user
+  User -> AccountSections: Open a profile or account-management section
+  AccountSections --> User: Show selected account information or action form
+  User -> AccountSections: Review or update account-related information
+  AccountSections --> User: Confirm change or explain what requires later support
+else Account features are not yet enabled in the app
+  AccountPage --> User: Show placeholder account area and planned future capability
+end
+
+@enduml
