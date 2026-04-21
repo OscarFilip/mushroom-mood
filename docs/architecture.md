@@ -37,6 +37,16 @@ Rendered SVG: generated into `./uml/out/architecture-nearest-station-weather-tar
 
 Source: [architecture-nearest-station-weather-target.puml](./uml/architecture-nearest-station-weather-target.puml)
 
+### Target-state mushroom readiness architecture
+
+This diagram shows the planned architecture for the spot-first mushroom readiness product, including readiness calculation boundaries, saved spot context, supported species management, weather evidence, and seasonal observation evidence.
+
+Rendered SVG: generated into `./uml/out/architecture-mushroom-readiness-target.svg`
+
+![Target-state mushroom readiness architecture](./uml/out/architecture-mushroom-readiness-target.svg)
+
+Source: [architecture-mushroom-readiness-target.puml](./uml/architecture-mushroom-readiness-target.puml)
+
 ## Working approach
 
 - Keep one current-state architecture diagram that matches the implemented code.

@@ -1,0 +1,24 @@
+@startuml feature-settings-page
+title Settings Page Feature Flow
+
+' Status: Planned
+
+actor User
+participant "Settings Page" as SettingsPage
+participant "Settings Sections" as SettingsSections
+
+User -> SettingsPage: Open settings page
+SettingsPage --> User: Show general application settings
+
+User -> SettingsSections: Review available preferences
+
+alt User changes a setting
+  User -> SettingsSections: Update one or more settings
+  SettingsSections --> User: Show changed values and save action
+  User -> SettingsSections: Save settings
+  SettingsSections --> User: Confirm saved settings
+else User only reviews settings
+  SettingsSections --> User: Keep current settings unchanged
+end
+
+@enduml

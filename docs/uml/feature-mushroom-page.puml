@@ -1,0 +1,36 @@
+@startuml feature-mushroom-page
+title Mushroom Page Feature Flow
+
+' Status: Planned
+
+actor User
+participant "Mushroom Page" as MushroomPage
+participant "Search and Filters" as SearchAndFilters
+participant "Mushroom Cards" as MushroomCards
+participant "Mushroom Detail View" as MushroomDetailView
+actor "Restricted Admin" as RestrictedAdmin
+participant "Species Inclusion Manager" as SpeciesInclusionManager
+
+User -> MushroomPage: Open mushroom page
+MushroomPage --> User: Show supported mushroom species overview with cards
+
+User -> SearchAndFilters: Search or filter mushrooms
+SearchAndFilters --> MushroomPage: Updated result set
+MushroomPage --> User: Show cards with image, name, and species summary
+
+User -> MushroomCards: Click mushroom card
+MushroomCards -> MushroomDetailView: Open selected mushroom
+MushroomDetailView --> User: Show species detail, seasonal behavior, and readiness explanation entry points
+
+alt User has a current spot context
+  MushroomDetailView --> User: Relate species detail to the current spot result
+else No current spot context exists
+  MushroomDetailView --> User: Show species information without a spot-specific result
+end
+
+alt Restricted admin manages supported species
+  RestrictedAdmin -> SpeciesInclusionManager: Search SLU taxonomy and include a new species
+  SpeciesInclusionManager --> RestrictedAdmin: Save supported species with taxon identity and display metadata
+end
+
+@enduml

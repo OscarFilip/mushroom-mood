@@ -1,0 +1,41 @@
+@startuml feature-start-page
+title Start Page Feature Flow
+
+' Status: Planned
+
+actor User
+participant "Start Page" as StartPage
+participant "Spot Selector" as SpotSelector
+participant "Species Selector" as SpeciesSelector
+participant "Readiness Result" as ReadinessResult
+
+User -> StartPage: Open start page
+StartPage --> User: Show saved spots, spot entry, and supported species choices
+
+alt User has a saved spot
+  User -> SpotSelector: Choose saved spot
+  SpotSelector --> StartPage: Selected spot context
+else User wants a new spot
+  User -> SpotSelector: Enter coordinates or choose map location
+  note right of User
+  Current position can be added later
+  as a lower-priority entry path.
+  end note
+  SpotSelector --> StartPage: Selected spot context
+end
+
+User -> SpeciesSelector: Choose mushroom species for the spot
+SpeciesSelector --> StartPage: Selected species context
+
+StartPage -> ReadinessResult: Request readiness for selected spot and species
+
+alt Readiness data is available
+  ReadinessResult --> StartPage: Readiness label, probability, confidence, and seasonal state
+  StartPage --> User: Show main result and short explanation
+  StartPage --> User: Offer path to deeper weather and species explanation
+else Readiness data is unavailable
+  ReadinessResult --> StartPage: Error or insufficient-data result
+  StartPage --> User: Show retry path and explain low-confidence or unavailable result
+end
+
+@enduml
