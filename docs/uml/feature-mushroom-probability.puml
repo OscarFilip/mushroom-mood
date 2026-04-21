@@ -1,0 +1,35 @@
+@startuml feature-mushroom-probability
+title Mushroom Probability Detail Feature Flow
+
+' Status: Planned
+
+actor User
+actor "Privileged Contributor" as Contributor
+participant "Mushroom Detail View" as MushroomDetailView
+participant "Probability Explanation" as ProbabilityExplanation
+participant "Feedback Review Flow" as FeedbackReviewFlow
+actor "Highest-level Admin" as Admin
+participant "Species Algorithm Settings" as SpeciesAlgorithmSettings
+
+User -> MushroomDetailView: Open mushroom detail
+MushroomDetailView --> User: Show readiness label, probability, confidence, and seasonal state
+
+User -> ProbabilityExplanation: Open explanation
+ProbabilityExplanation --> User: Show understandable seasonal, weather, and species-profile inputs and how they affect the result
+
+alt User only wants transparency
+	ProbabilityExplanation --> User: Explain why readiness and confidence are high, medium, or low
+else Contributor and admin features are used later
+	Contributor -> FeedbackReviewFlow: Submit species-specific improvement input
+	Admin -> SpeciesAlgorithmSettings: Review accepted input and adjust species algorithm settings
+	SpeciesAlgorithmSettings --> User: Show when a species-specific rule change affects visible explanation
+end
+
+note right of FeedbackReviewFlow
+The exact contributor submission, review, and approval
+workflow is intentionally deferred.
+The important product requirement is transparent handling
+of suggestions and transparent impact on the visible logic.
+end note
+
+@enduml
