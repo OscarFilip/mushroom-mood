@@ -1,6 +1,6 @@
 # Current Work
 
-Update this file before asking an agent to continue work from repository context.
+Update this file before you ask an agent to continue work from repository context.
 
 ## Active feature
 
@@ -26,7 +26,7 @@ Allowed values:
 
 ## Expected next action
 
-Implement the first mushroom-readiness slice in the app: build the start-page spot input, the first curated species selector, a readiness API route, a readiness service, and result rendering with loading, validation, error, and insufficient-data states.
+Implement the first mushroom-readiness slice in the app. Build the start-page spot input, the first curated species selector, a readiness API route, a readiness service, and result rendering with loading, validation, error, and insufficient-data states.
 
 Do not leave this blank if you want minimal-prompt continuation.
 

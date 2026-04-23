@@ -1,6 +1,6 @@
 # Mushroom Readiness Manual Review Checklist
 
-Use this before commit after agent implementation and independent review.
+Use this before commit after implementation and an independent review.
 
 ## Scope and intent
 

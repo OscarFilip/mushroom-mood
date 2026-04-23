@@ -19,6 +19,7 @@
 - Defined the first implementation slice, including scope, contract sketch, and implementation handoff trigger.
 - Locked the first curated species set and the initial readiness-label vocabulary for the first slice.
 - Expanded the readiness-label vocabulary with stronger top and bottom states and switched the active work item into implementation stage.
+- Rewrote the human-facing markdown docs for clearer wording, shorter sentences, and easier scanning.
 
 ## Commands and checks run
 
@@ -27,6 +28,8 @@ Read planning templates and AGENTS.md
 Used as source for creating active planning artifacts
 Read current feature-flow and architecture docs before updating planning artifacts
 Read current app route, page, and service files to align slice planning with the existing codebase
+Reviewed markdown docs and templates for readability
+Ran git diff on the first documentation edit batch
 ```
 
 ## Failures or blockers
@@ -45,6 +48,19 @@ Read current app route, page, and service files to align slice planning with the
 - `docs/plans/active/mushroom-readiness-execution-log.md`
 - `docs/plans/active/mushroom-readiness-review.md`
 - `docs/plans/active/mushroom-readiness-manual-review-checklist.md`
+- `README.md`
+- `docs/README.md`
+- `docs/done-and-testing.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `docs/plans/README.md`
+- `docs/plans/active/README.md`
+- `docs/plans/_templates/implementation-plan-template.md`
+- `docs/plans/_templates/decision-log-template.md`
+- `docs/plans/_templates/execution-log-template.md`
+- `docs/plans/_templates/review-template.md`
+- `docs/plans/_templates/manual-review-checklist-template.md`
+- `tests/README.md`
+- `AGENTS.md`
 - `docs/feature-flows.md`
 - `docs/architecture.md`
 - `docs/uml/feature-start-page.puml`

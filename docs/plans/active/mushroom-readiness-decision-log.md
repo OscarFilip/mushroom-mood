@@ -2,11 +2,11 @@
 
 ## Decision
 
-The application is a spot-first mushroom readiness app rather than a generic weather-history app.
+The application is a spot-first mushroom-readiness app rather than a generic weather-history app.
 
 ## Why
 
-The core user question starts from a known or suspected mushroom spot and asks whether it is worth checking now for pickable fruit bodies.
+The core user question starts with a known or suspected mushroom spot and asks whether it is worth checking now for pickable fruit bodies.
 
 ## Alternatives considered
 
@@ -16,7 +16,7 @@ The core user question starts from a known or suspected mushroom spot and asks w
 ## Tradeoffs
 
 - Spot-first framing gives a clearer product purpose.
-- It increases the importance of saved-spot design and spot-based calculation context.
+- It makes saved-spot design and spot-based calculation context more important.
 
 ## Impacted files or areas
 
@@ -33,7 +33,7 @@ Spot metadata such as confirmed spot or possible spot is user organization only 
 
 ## Why
 
-The app should not attempt to prove whether the species exists at the exact spot. The user already chooses a spot they care about, and regional observation data is incomplete relative to the true distribution of fungi.
+The app should not try to prove whether the species exists at the exact spot. The user already chooses a spot they care about, and regional observation data is incomplete compared with the true distribution of fungi.
 
 ## Alternatives considered
 
@@ -43,7 +43,7 @@ The app should not attempt to prove whether the species exists at the exact spot
 ## Tradeoffs
 
 - This avoids false precision.
-- It removes one potentially strong local signal, but that signal is not reliably available from the system itself.
+- It removes one potentially strong local signal, but the system cannot provide that signal in a reliable way.
 
 ## Impacted files or areas
 
@@ -59,7 +59,7 @@ The main result format should be readiness label plus probability percentage plu
 
 ## Why
 
-Users need a simple practical answer, a more specific numeric estimate, and clear communication of how reliable the estimate is.
+Users need a simple practical answer, a numeric estimate, and a clear sense of how reliable that estimate is.
 
 ## Alternatives considered
 
@@ -86,7 +86,7 @@ The calculation model should use seasonal factor, weather factor, and species pr
 
 ## Why
 
-Seasonality is often a strong gate, weather affects whether fruiting is supported now, and different species reach pickable size at different speeds and spoil at different speeds.
+Seasonality is often a strong gate, weather affects whether fruiting is supported now, and different species reach pickable size and spoil at different speeds.
 
 ## Alternatives considered
 
@@ -112,7 +112,7 @@ Use precipitation windows of 3, 7, 14, and 30 days for the first model design.
 
 ## Why
 
-One long window loses timing structure. Multiple windows preserve both recent trigger conditions and longer-term moisture buildup.
+One long window loses timing structure. Multiple windows preserve recent trigger conditions and longer-term moisture buildup.
 
 ## Alternatives considered
 
@@ -164,7 +164,7 @@ Expert input and admin adjustment of species-specific algorithms are planned cor
 
 ## Why
 
-The feature is strategically important, but the exact submission, review, approval, and change-application process still needs a dedicated planning pass.
+The feature is important, but the exact submission, review, approval, and change process still needs a dedicated planning pass.
 
 ## Alternatives considered
 
@@ -201,7 +201,7 @@ This is the smallest useful end-to-end path that answers the core user question 
 ## Tradeoffs
 
 - This gives fast product validation against the core question.
-- It requires temporary restraint on adjacent features that may feel important but are not necessary for the first useful slice.
+- It requires restraint on adjacent features that may feel important but are not needed for the first useful slice.
 
 ## Impacted files or areas
 
@@ -245,7 +245,7 @@ The initial readiness-label vocabulary is `very-likely-worth-checking`, `worth-c
 
 ## Why
 
-These labels give a clear practical answer without mixing seasonal state into readiness and without forcing false precision. They also distinguish between ordinary support and very strong support, and between ordinary low support and very strong reasons not to go now.
+These labels give a clear practical answer without mixing seasonal state into readiness or forcing false precision. They also distinguish between ordinary support and very strong support, and between ordinary low support and very strong reasons not to go now.
 
 ## Alternatives considered
 

@@ -2,15 +2,15 @@
 
 ## Summary
 
-Define the product and planning model for a spot-first mushroom readiness application that helps a user decide whether it is worth checking a known or suspected mushroom spot now for pickable fruit bodies.
+Define the product and planning model for a spot-first mushroom-readiness app. The app helps a user decide whether it is worth checking a known or suspected mushroom spot now for pickable fruit bodies.
 
 ## Goal
 
-Create a stable planning basis for revising the feature-flow UMLs, the first target-state architecture work, and the first implementation slice. The app should answer whether a chosen spot for a chosen species is worth checking now, using transparent factors and a curated species catalog.
+Create a stable planning base for revised feature-flow UMLs, the first target-state architecture work, and the first implementation slice. The app should answer whether a chosen spot for a chosen species is worth checking now, using transparent factors and a curated species catalog.
 
 ## Scope
 
-- In scope: spot-first product framing, calculation-factor framing, output format, curated species strategy, saved-spot design direction, and deferred expert-workflow note.
+- In scope: spot-first product framing, calculation factors, output format, curated species strategy, saved-spot design direction, and a note that the expert workflow is deferred.
 - In scope: decisions needed to revise feature-flow diagrams, define an initial target-state architecture, and specify the first implementation slice.
 - Out of scope: implementation details for the expert-input workflow, code changes, and final factor weighting formulas.
 
@@ -26,7 +26,7 @@ Relevant files and prior work:
 - `docs/uml/feature-mushroom-probability.puml`
 - `docs/uml/architecture-mushroom-readiness-target.puml`
 
-Key planning context from discussion:
+Key planning context:
 
 - The core user question is: "I have a place where I know mushroom species X grows or may grow. Is now a good time to go there and look for pickable fruit bodies?"
 - The app should not try to prove the species exists at the exact spot.
@@ -53,7 +53,7 @@ Revise the planned feature flows so they center on:
 - inspect a transparent explanation of seasonal state, weather support, and species profile behavior
 - manage supported species through a restricted UI
 
-The expert-input feature remains planned, but its detailed flow should be marked as intentionally deferred.
+The expert-input feature remains planned, but its detailed flow should stay marked as intentionally deferred.
 
 ### First implementation slice
 
@@ -65,7 +65,7 @@ The first slice should implement the smallest end-to-end version of the core use
 - app renders readiness label, probability, confidence, seasonal state, and short explanation summary
 - app renders loading, validation, error, and insufficient-data states
 
-The first slice should explicitly exclude:
+The first slice should exclude:
 
 - saved-spot persistence and account-linked spot management
 - species management UI and admin-only inclusion tools
@@ -75,7 +75,7 @@ The first slice should explicitly exclude:
 
 ### Architecture impact
 
-The target-state architecture should cover the following domains:
+The target-state architecture should cover these domains:
 
 - saved spots
 - curated species catalog
@@ -92,11 +92,11 @@ For the first implementation slice, the expected code boundaries are:
 - a new API route for readiness lookup, likely `app/api/mushroom-readiness/route.ts`
 - a new service module, likely `lib/services/mushroomReadinessService.ts`
 - a small curated species catalog source for the first slice, likely static and repo-local
-- reuse or adaptation of existing weather-history retrieval as weather evidence input where practical
+- reuse or adapt existing weather-history retrieval as weather evidence input when practical
 
 ### Testing approach
 
-When this slice moves to implementation, add route and service tests first. UI tests can stay lighter if the core request and response handling is covered by route and service tests.
+When this slice moves to implementation, add route and service tests first. UI tests can stay lighter if route and service tests cover the core request and response handling.
 
 ### First-slice contract sketch
 
@@ -217,7 +217,7 @@ Planning should hand over to implementation when these slice-local decisions are
 - the first curated species set for implementation
 - the first readiness-label vocabulary for UI and API use
 
-Those decisions are now defined in this file, and the active handoff has been moved to implementation. Continue implementation from `docs/plans/active/current-work.md` until the first slice is built and ready for review.
+Those decisions are now defined in this file, and the active handoff has moved to implementation. Continue implementation from `docs/plans/active/current-work.md` until the first slice is built and ready for review.
 
 ## Definition of done
 

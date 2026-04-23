@@ -1,47 +1,51 @@
 # Architecture
 
-This page is for technical structure and implementation diagrams.
+This page covers the app's technical structure.
 
-It separates current-state diagrams from target-state diagrams so the implemented architecture and planned changes do not get mixed together.
+It keeps current-state diagrams separate from target-state diagrams so implemented behavior and planned changes do not blur together.
 
 ## What belongs here
 
-- Page and route structure
-- Service and repository boundaries
-- External API integration design
-- Data flow between app layers
+- page and route structure
+- service and repository boundaries
+- external API integration design
+- data flow between app layers
 
 ## Current status
 
-The repository currently has a feature flow in [feature-flows.md](./feature-flows.md) and both a current-state and target-state architecture diagram for the nearest-station weather feature.
+The repository includes:
+
+- feature-flow docs in [feature-flows.md](./feature-flows.md)
+- a current-state architecture diagram for nearest-station weather
+- target-state architecture diagrams for nearest-station weather and mushroom readiness
 
 ## Available architecture diagrams
 
-### Current-state nearest station weather architecture
+### Current-state nearest-station weather
 
-This diagram shows the architecture that is implemented in the app now.
+This diagram shows the architecture that the app uses now.
 
-Rendered SVG: generated into `./uml/out/architecture-nearest-station-weather.svg`
+Rendered SVG: `./uml/out/architecture-nearest-station-weather.svg`
 
 ![Current-state nearest station weather architecture](./uml/out/architecture-nearest-station-weather.svg)
 
 Source: [architecture-nearest-station-weather.puml](./uml/architecture-nearest-station-weather.puml)
 
-### Target-state nearest station weather architecture
+### Target-state nearest-station weather
 
-This diagram shows the planned architecture for persisted station catalog data and cached weather data.
+This diagram shows the planned architecture for stored station catalog data and cached weather data.
 
-Rendered SVG: generated into `./uml/out/architecture-nearest-station-weather-target.svg`
+Rendered SVG: `./uml/out/architecture-nearest-station-weather-target.svg`
 
 ![Target-state nearest station weather architecture](./uml/out/architecture-nearest-station-weather-target.svg)
 
 Source: [architecture-nearest-station-weather-target.puml](./uml/architecture-nearest-station-weather-target.puml)
 
-### Target-state mushroom readiness architecture
+### Target-state mushroom readiness
 
-This diagram shows the planned architecture for the spot-first mushroom readiness product, including readiness calculation boundaries, saved spot context, supported species management, weather evidence, and seasonal observation evidence.
+This diagram shows the planned architecture for the spot-first mushroom-readiness flow. It covers readiness calculation boundaries, saved spots, supported species, weather evidence, and seasonal evidence.
 
-Rendered SVG: generated into `./uml/out/architecture-mushroom-readiness-target.svg`
+Rendered SVG: `./uml/out/architecture-mushroom-readiness-target.svg`
 
 ![Target-state mushroom readiness architecture](./uml/out/architecture-mushroom-readiness-target.svg)
 
@@ -49,7 +53,8 @@ Source: [architecture-mushroom-readiness-target.puml](./uml/architecture-mushroo
 
 ## Working approach
 
-- Keep one current-state architecture diagram that matches the implemented code.
-- Create a separate target-state diagram when designing a significant architectural change.
-- Keep target-state diagrams at the same abstraction level as current-state diagrams: focus on responsibilities and boundaries, not low-level implementation steps.
-- Once the new design is implemented and stable, update the current-state diagram and remove or archive the target-state draft.
+- Keep one current-state architecture diagram that matches the code.
+- Create a separate target-state diagram for larger planned changes.
+- Keep target-state diagrams at the same abstraction level as current-state diagrams.
+- Focus on responsibilities and boundaries, not low-level steps.
+- When a planned design is stable in code, update the current-state diagram and remove or archive the target-state draft.

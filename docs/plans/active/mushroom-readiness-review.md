@@ -2,7 +2,7 @@
 
 ## Review scope
 
-Planning artifacts for the mushroom readiness feature after feature-flow revision and initial target-state architecture planning.
+Planning artifacts for the mushroom-readiness feature after the feature-flow revision and the initial target-state architecture planning.
 
 ## Findings
 
@@ -18,6 +18,7 @@ Planning artifacts for the mushroom readiness feature after feature-flow revisio
 
 - The detailed expert-input workflow is intentionally deferred and must remain visibly marked as unresolved in later planning artifacts.
 - Confidence presentation is still open and could affect later API and UI naming.
+- Human-facing docs should stay aligned with the new plain-language style as future planning files are added.
 
 ## Test coverage gaps
 

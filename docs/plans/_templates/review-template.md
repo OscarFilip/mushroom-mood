@@ -2,7 +2,7 @@
 
 ## Review scope
 
-What was reviewed and against which plan or requirements.
+Describe what was reviewed and which plan or requirements it was checked against.
 
 ## Findings
 
