@@ -1,17 +1,17 @@
 # Active Plans
 
-This folder contains the files for the feature currently being planned, implemented, or reviewed.
+This folder contains the files for the feature that is now in planning, implementation, or review.
 
 ## Minimal-prompt workflow
 
-To let an agent continue with minimal prompting:
+To let an agent continue with little prompting:
 
-1. Update `current-work.md`
-2. Make sure the referenced feature files exist
-3. Start the agent in the repository root
-4. Tell it only to continue from `AGENTS.md` and `docs/plans/active/current-work.md`
+1. Update `current-work.md`.
+2. Make sure the referenced feature files exist.
+3. Start the agent in the repository root.
+4. Tell it to continue from `AGENTS.md` and `docs/plans/active/current-work.md`.
 
-If `current-work.md` still contains placeholders, the agent should stop and ask instead of inventing scope.
+If `current-work.md` still contains placeholders, the agent should stop and ask instead of guessing the scope.
 
 ## Expected contents
 

@@ -1,6 +1,6 @@
 # <feature-name> Manual Review Checklist
 
-Use this before commit after agent implementation and independent review.
+Use this before commit after implementation and an independent review.
 
 ## Scope and intent
 
@@ -16,7 +16,7 @@ Use this before commit after agent implementation and independent review.
 
 ## Code quality
 
-- [ ] The code is understandable without relying on hidden agent reasoning.
+- [ ] The code is understandable without relying on hidden agent context.
 - [ ] New abstractions are justified and not premature.
 - [ ] Dependencies added or changed are documented in the decision log.
 - [ ] Naming, file placement, and structure fit the repo.

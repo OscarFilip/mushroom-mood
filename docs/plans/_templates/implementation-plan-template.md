@@ -6,7 +6,7 @@ Short description of the feature or change.
 
 ## Goal
 
-What success looks like from the user and product perspective.
+Describe what success looks like from the user and product point of view.
 
 ## Scope
 
@@ -16,7 +16,7 @@ What success looks like from the user and product perspective.
 
 ## Context
 
-Relevant files, diagrams, external documentation, or previous work.
+List the relevant files, diagrams, external docs, or previous work.
 
 ## Acceptance criteria
 
@@ -28,15 +28,15 @@ Relevant files, diagrams, external documentation, or previous work.
 
 ### User flow impact
 
-What feature flows are added or changed.
+Explain which feature flows change.
 
 ### Architecture impact
 
-What pages, routes, services, repositories, or models are affected.
+Explain which pages, routes, services, repositories, or models change.
 
 ### Testing approach
 
-What tests should be added or updated.
+Explain which tests should be added or updated.
 
 ## Implementation steps
 

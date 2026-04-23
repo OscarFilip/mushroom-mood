@@ -1,40 +1,40 @@
 # Done And Testing
 
-This note defines what “done” means for this project and what minimum testing level is expected before a feature flow is considered complete.
+This note defines what done means in this project and the minimum test bar for each feature flow.
 
 ## Definition of done
 
-A flow is considered done when all of the following are true:
+A flow is done when all of these are true:
 
 - The main user path works end to end.
 - Important error and empty states are handled.
 - Input validation is in place where the flow accepts user input.
-- The related feature flow and architecture flow diagrams match the implementation.
-- Tests cover the important behavior for the flow.
+- The related feature-flow and architecture diagrams match the implementation.
+- Tests cover the important behavior in the flow.
 - `npm test` passes.
 - `npm run build` passes.
-- There are no obvious placeholder branches, commented-out production code, or known broken states left in the flow.
+- No obvious placeholder branches, commented-out production code, or known broken states remain in the flow.
 
 ## Minimum test strategy
 
-This repository should use a lightweight test pyramid.
+Use a light test pyramid.
 
-### 1. Unit tests are required for pure logic
+### 1. Unit tests for pure logic
 
-Use unit tests when the behavior is fast, isolated, and can be checked without wiring together multiple parts of the app.
+Use unit tests when the behavior is fast, isolated, and easy to verify without wiring together multiple parts of the app.
 
-Typical scenarios:
+Typical cases:
 
 - validation rules
 - calculations and comparisons
 - mapping or transformation logic
 - branching logic with clear inputs and outputs
 
-### 2. Integration tests are required for the main backend flow
+### 2. Integration tests for the main backend flow
 
-Use integration tests when the value comes from verifying that multiple parts work together correctly.
+Use integration tests when the goal is to verify that multiple parts work together.
 
-Typical scenarios:
+Typical cases:
 
 - route-to-service behavior
 - service-to-repository behavior
@@ -49,6 +49,6 @@ Each implemented flow should have at least:
 
 ### 3. End-to-end tests are optional for now
 
-End-to-end testing might come into picture later on.
+End-to-end tests may come later.
 
-For now, the focus should stay on strong unit tests and a small number of valuable integration tests.
+For now, focus on strong unit tests and a small set of useful integration tests.

@@ -1,48 +1,26 @@
-# Summary
+## Summary
 
-Describe the change in a few sentences.
+<!-- Describe the change in 1-3 short sentences. -->
 
-# Why this change
+## Why
 
-Explain the user or technical problem this change addresses.
+<!-- Explain why this change was needed. -->
 
-# Plan and traceability
+## Notes
 
-- Plan: 
-- Decision log: 
-- Execution log: 
-- Review: 
-- Manual review checklist: 
+<!-- Add any useful context, tradeoff, or follow-up item. Remove this section if you do not need it. -->
 
-# What changed
+## Checklist
 
-- 
-- 
-- 
+- [ ] Tests updated if needed
+- [ ] Docs updated if needed
+- [ ] Build or relevant checks run
 
-# Diagrams and docs
+## Testing
 
-- [ ] Feature-flow docs updated if needed
-- [ ] Architecture docs updated if needed
-- [ ] Other docs updated if needed
-
-# Testing
-
-- [ ] Tests added or updated where needed
-- [ ] Relevant checks were run
-
-Commands run:
+<!-- List the checks you ran. If you did not run anything, say so. -->
 
 ```text
 <command>
-<result summary>
+<result>
 ```
-
-# Review focus
-
-Call out any areas where you want extra review attention.
-
-# Risks or follow-up
-
-- 
-- 

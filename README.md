@@ -1,27 +1,29 @@
 # Rain History
 
-This is a project under development. More info will come on this page. Main purpose of application is helping myself finding food-worthy mushrooms in the Swedish nature. If I am satisfied with the result it might become open for others to use.
+Rain History is a Next.js project for checking weather signals that may help predict mushroom readiness in Sweden.
 
-## Current Features
-
-- something something...
+The project is still in development. The current work focuses on planning the mushroom-readiness feature and keeping the code, diagrams, and decisions aligned.
 
 ## Status
 
-This project is under active development.
+The app already includes weather-history code and tests. The next product slice is the mushroom-readiness flow.
 
 Current focus:
-- defining feature scope
-- shaping the application architecture
-- documenting flows and technical decisions before implementation is finalized
+
+- define the first user flow
+- lock down the main architecture
+- document decisions before wider implementation
 
 ## Documentation
 
 - [Project docs](./docs/README.md)
 - [Feature flows](./docs/feature-flows.md)
 - [Architecture](./docs/architecture.md)
+- [Definition of done and testing](./docs/done-and-testing.md)
 
 ## Development
+
+Start the app:
 
 ```bash
 npm run dev
@@ -34,10 +36,10 @@ Useful scripts:
 - `npm run test:coverage`
 - `npm run build`
 
-## PlantUML
+## Diagrams
 
-- Source files live in `docs/uml/`.
+- PlantUML source files live in `docs/uml/`.
 - Generated SVG files live in `docs/uml/out/`.
 - `.puml` files are the source of truth.
-- Preview diagrams locally in VS Code with the PlantUML extension.
+- Preview diagrams in VS Code with the PlantUML extension.
 - GitHub Actions regenerates SVG files on pushes to `main`.

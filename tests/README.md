@@ -1,30 +1,30 @@
 # Unit Testing Guide for C# Developers
 
-This guide explains how unit testing works in this Next.js TypeScript project, with comparisons to C#/.NET testing practices.
+This guide explains how testing works in this Next.js TypeScript project. It uses C#/.NET examples where that helps.
 
-## 🗂️ **Folder Structure**
+## Folder structure
 
+```text
+Project Root
+|-- lib/                    # Business logic under test
+|   |-- repositories/
+|   |-- services/
+|   `-- utils/
+|-- tests/                  # Test files
+|   |-- lib/
+|   |   |-- repositories/
+|   |   |   |-- weatherDataRepository.test.ts
+|   |   |   `-- apiClient.test.ts
+|   |   |-- services/
+|   |   `-- utils/
+|   |-- helpers/
+|   |   `-- testHelpers.ts  # Test helpers
+|   `-- setup.ts            # Global test setup
+|-- jest.config.js          # Test configuration
+`-- package.json            # Test scripts
 ```
-📁 Project Root
-├── lib/                           # Business logic to be tested
-│   ├── repositories/
-│   ├── services/
-│   └── utils/
-├── tests/                         # Test files
-│   ├── lib/
-│   │   ├── repositories/
-│   │   │   ├── weatherDataRepository.test.ts
-│   │   │   └── apiClient.test.ts
-│   │   ├── services/
-│   │   └── utils/
-│   ├── helpers/
-│   │   └── testHelpers.ts        # Test utilities (like C# test helpers)
-│   └── setup.ts                  # Global test setup
-├── jest.config.js                # Test configuration
-└── package.json                  # Test scripts
-```
 
-## 🧪 **Testing Framework Comparison**
+## Framework comparison
 
 | C#/.NET | TypeScript/Jest | Purpose |
 |---------|-----------------|---------|
@@ -36,9 +36,9 @@ This guide explains how unit testing works in this Next.js TypeScript project, w
 | `[ExpectedException]` | `expect().toThrow()` | Exception testing |
 | Moq | `jest.fn()` | Mocking |
 
-## 🚀 **Running Tests**
+## Running tests
 
-### **Basic Commands**
+### Basic commands
 ```bash
 # Run all tests once
 npm test
@@ -53,7 +53,7 @@ npm run test:coverage
 npm run test:ci
 ```
 
-### **Run Specific Tests**
+### Run specific tests
 ```bash
 # Run tests matching a pattern
 npm test -- weatherDataRepository
@@ -65,9 +65,9 @@ npm test -- tests/lib/repositories/weatherDataRepository.test.ts
 npm test -- --testNamePattern="should return"
 ```
 
-## 📝 **Test Structure Example**
+## Test structure example
 
-### **TypeScript/Jest**
+### TypeScript/Jest
 ```typescript
 describe('WeatherDataRepository', () => {
   let repository;
@@ -91,7 +91,7 @@ describe('WeatherDataRepository', () => {
 });
 ```
 
-### **C# Equivalent**
+### C# equivalent
 ```csharp
 [TestClass]
 public class WeatherDataRepositoryTests
@@ -121,7 +121,7 @@ public class WeatherDataRepositoryTests
 }
 ```
 
-## 🎯 **Common Jest Assertions**
+## Common Jest assertions
 
 | Jest | C# Equivalent | Purpose |
 |------|---------------|---------|
@@ -133,9 +133,9 @@ public class WeatherDataRepositoryTests
 | `expect(obj).toHaveProperty('name')` | `Assert.IsTrue(obj.HasProperty("name"))` | Object has property |
 | `expect(() => func()).toThrow()` | `Assert.ThrowsException<T>(() => func())` | Exception testing |
 
-## 🔧 **Mocking (Similar to Moq in C#)**
+## Mocking
 
-### **TypeScript/Jest**
+### TypeScript/Jest
 ```typescript
 it('should call external API', async () => {
   // Arrange
@@ -152,7 +152,7 @@ it('should call external API', async () => {
 });
 ```
 
-### **C# with Moq**
+### C# with Moq
 ```csharp
 [TestMethod]
 public async Task ShouldCallExternalApi()
@@ -170,7 +170,7 @@ public async Task ShouldCallExternalApi()
 }
 ```
 
-## 📊 **Coverage Reports**
+## Coverage reports
 
 After running `npm run test:coverage`, you'll see:
 
@@ -186,7 +186,7 @@ weatherDataRepository.ts        |     100 |      100 |     100 |     100 |
 - **% Funcs**: Function coverage
 - **% Lines**: Line coverage
 
-## 🎨 **Test Helpers and Utilities**
+## Test helpers and utilities
 
 Use the helper functions in `tests/helpers/testHelpers.ts`:
 
@@ -201,19 +201,19 @@ it('should handle mock data', () => {
 });
 ```
 
-## 🏗️ **Best Practices**
+## Best practices
 
-### **1. Test Organization**
+### 1. Test organization
 - Group related tests in `describe()` blocks
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
 
-### **2. Test Data**
+### 2. Test data
 - Use test helpers for creating mock data
 - Keep test data close to the test
 - Use meaningful test values
 
-### **3. Async Testing**
+### 3. Async testing
 ```typescript
 // Good - properly handle async
 it('should handle async operations', async () => {
@@ -228,20 +228,20 @@ it('should handle async operations', () => {
 });
 ```
 
-### **4. Mocking External Dependencies**
+### 4. Mocking external dependencies
 - Mock external APIs, databases, file systems
 - Reset mocks between tests
 - Verify mock interactions
 
-## 🔍 **Debugging Tests**
+## Debugging tests
 
-### **VS Code Integration**
+### VS Code integration
 1. Install "Jest" extension
 2. Click the play button next to individual tests
 3. Set breakpoints in test files
 4. Use "Debug Test" from command palette
 
-### **Console Output**
+### Console output
 ```typescript
 it('should debug test', () => {
   console.log('Debug info:', someValue);
@@ -249,7 +249,7 @@ it('should debug test', () => {
 });
 ```
 
-## 📈 **Test-Driven Development (TDD)**
+## Test-driven development
 
 1. **Red**: Write a failing test first
 2. **Green**: Write minimal code to make it pass
@@ -266,4 +266,4 @@ it('should calculate distance between stations', () => {
 // 3. REFACTOR - Improve implementation
 ```
 
-This testing setup provides the same level of confidence and practices you're used to in C#, adapted for the TypeScript ecosystem!
+This setup gives you the same core testing habits you may already use in C#, adapted to the TypeScript toolchain.

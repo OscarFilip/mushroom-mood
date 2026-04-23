@@ -2,7 +2,7 @@
 
 ## Review scope
 
-Planning artifacts for the mushroom readiness feature after feature-flow revision and initial target-state architecture planning.
+Planning artifacts for the mushroom-readiness feature after the feature-flow revision and the initial target-state architecture planning.
 
 ## Findings
 
@@ -17,7 +17,8 @@ Planning artifacts for the mushroom readiness feature after feature-flow revisio
 ### Low severity
 
 - The detailed expert-input workflow is intentionally deferred and must remain visibly marked as unresolved in later planning artifacts.
-- Exact readiness label wording and confidence presentation are still open and could affect later API and UI naming.
+- Confidence presentation is still open and could affect later API and UI naming.
+- Human-facing docs should stay aligned with the new plain-language style as future planning files are added.
 
 ## Test coverage gaps
 
@@ -30,5 +31,5 @@ Planning artifacts for the mushroom readiness feature after feature-flow revisio
 
 ## Recommended follow-up
 
-1. Decide the first implementation slice from the target-state architecture.
-2. Define the route, service, and data-shape contracts needed for that slice.
+1. Build the first slice end to end under the implementation-stage handoff.
+2. Resolve confidence presentation details during implementation if they block result rendering.
