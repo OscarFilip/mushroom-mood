@@ -5,6 +5,7 @@ Use this before commit after implementation and an independent review.
 ## Scope and intent
 
 - [ ] The change still matches the intended feature scope.
+- [ ] The final diff still matches the planned slice boundary.
 - [ ] No unrelated files or refactors were introduced without a reason.
 - [ ] Any remaining open questions are documented.
 
@@ -31,6 +32,8 @@ Use this before commit after implementation and an independent review.
 ## Review and commit readiness
 
 - [ ] An independent review was completed by a different model or a separate pass.
+- [ ] The latest review findings were triaged, not blindly applied.
 - [ ] Review findings were addressed or explicitly accepted as follow-up items.
+- [ ] Any re-review after fixes was targeted to changed or previously risky areas.
 - [ ] I understand the key technical choices well enough to explain them.
 - [ ] The change is ready for a manual commit.
