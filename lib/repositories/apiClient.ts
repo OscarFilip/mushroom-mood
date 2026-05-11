@@ -3,6 +3,12 @@ export interface RequestOptions extends RequestInit {
   responseType?: 'json' | 'text';
 }
 
+const RETRYABLE_NETWORK_ERROR_CODES = new Set([
+  'UND_ERR_CONNECT_TIMEOUT',
+  'UND_ERR_HEADERS_TIMEOUT',
+  'UND_ERR_SOCKET',
+]);
+
 export class ApiClient {
   private baseURL: string;
   private defaultHeaders: Record<string, string>
@@ -24,23 +30,62 @@ export class ApiClient {
       },
     };
 
-    try {
-      const response: Response = await fetch(url, config);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const method = (config.method ?? 'GET').toUpperCase();
+    const maxAttempts = this.shouldRetryMethod(method) ? 3 : 1;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const response: Response = await fetch(url, config);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        if (responseType === 'text') {
+          return await response.text() as T;
+        }
+        
+        return await response.json();
+      } catch (error) {
+        lastError = error;
+
+        if (!this.shouldRetryRequest(error, attempt, maxAttempts)) {
+          console.error('API request failed:', error);
+          throw error;
+        }
       }
-      
-      // Handle different response types
-      if (responseType === 'text') {
-        return await response.text() as T;
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
     }
+
+    console.error('API request failed:', lastError);
+    throw lastError;
+  }
+
+  private shouldRetryMethod(method: string): boolean {
+    return method === 'GET' || method === 'HEAD';
+  }
+
+  private shouldRetryRequest(error: unknown, attempt: number, maxAttempts: number): boolean {
+    if (attempt >= maxAttempts) {
+      return false;
+    }
+
+    const errorCode = this.getRetryableErrorCode(error);
+    return errorCode !== null && RETRYABLE_NETWORK_ERROR_CODES.has(errorCode);
+  }
+
+  private getRetryableErrorCode(error: unknown): string | null {
+    if (!error || typeof error !== 'object') {
+      return null;
+    }
+
+    const cause = 'cause' in error ? error.cause : null;
+    if (!cause || typeof cause !== 'object') {
+      return null;
+    }
+
+    const code = 'code' in cause ? cause.code : null;
+    return typeof code === 'string' ? code : null;
   }
 
   get<T = any>(endpoint: string, headers: Record<string, string> = {}): Promise<T> {

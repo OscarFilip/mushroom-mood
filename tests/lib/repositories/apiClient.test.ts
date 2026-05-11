@@ -68,6 +68,52 @@ describe('ApiClient', () => {
     await expect(client.get('/weather')).rejects.toThrow('HTTP 503: Service Unavailable');
   });
 
+  it('retries transient GET network failures before succeeding', async () => {
+    const timeoutError = Object.assign(new TypeError('fetch failed'), {
+      cause: { code: 'UND_ERR_CONNECT_TIMEOUT' },
+    });
+
+    (global.fetch as jest.Mock)
+      .mockRejectedValueOnce(timeoutError)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ ok: true }),
+      });
+
+    const client = new ApiClient('https://example.test');
+
+    const result = await client.get('/weather');
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('does not retry non-idempotent requests after a transient network failure', async () => {
+    const timeoutError = Object.assign(new TypeError('fetch failed'), {
+      cause: { code: 'UND_ERR_CONNECT_TIMEOUT' },
+    });
+
+    (global.fetch as jest.Mock).mockRejectedValue(timeoutError);
+
+    const client = new ApiClient('https://example.test');
+
+    await expect(client.post('/settings', { enabled: true })).rejects.toThrow('fetch failed');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops retrying GET requests after exhausting transient network attempts', async () => {
+    const timeoutError = Object.assign(new TypeError('fetch failed'), {
+      cause: { code: 'UND_ERR_CONNECT_TIMEOUT' },
+    });
+
+    (global.fetch as jest.Mock).mockRejectedValue(timeoutError);
+
+    const client = new ApiClient('https://example.test');
+
+    await expect(client.get('/weather')).rejects.toThrow('fetch failed');
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+  });
+
   it('serializes JSON bodies for post requests', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,

@@ -4,11 +4,11 @@ Update this file before you ask an agent to continue work from repository contex
 
 ## Active feature
 
-`mushroom-readiness`
+`<feature-name>`
 
 ## Stage
 
-`implementation`
+`planning`
 
 Allowed values:
 
@@ -16,26 +16,51 @@ Allowed values:
 - `implementation`
 - `review`
 
+## Current owner
+
+`human`
+
+Examples:
+
+- `planning-agent`
+- `implementation-agent`
+- `review-agent`
+- `human`
+
+## Current review round
+
+`not-started`
+
+Examples:
+
+- `not-started`
+- `self-check-1`
+- `independent-review-1`
+- `targeted-rereview-1`
+
 ## Primary files
 
-- Plan: `docs/plans/active/mushroom-readiness-plan.md`
-- Decision log: `docs/plans/active/mushroom-readiness-decision-log.md`
-- Execution log: `docs/plans/active/mushroom-readiness-execution-log.md`
-- Review: `docs/plans/active/mushroom-readiness-review.md`
-- Manual checklist: `docs/plans/active/mushroom-readiness-manual-review-checklist.md`
+- Plan: `docs/plans/active/<feature-name>-plan.md`
+- Decision log: `docs/plans/active/<feature-name>-decision-log.md`
+- Execution log: `docs/plans/active/<feature-name>-execution-log.md`
+- Review: `docs/plans/active/<feature-name>-review.md`
+- Manual checklist: `docs/plans/active/<feature-name>-manual-review-checklist.md`
 
 ## Expected next action
 
-Implement the first mushroom-readiness slice in the app. Build the start-page spot input, the first curated species selector, a readiness API route, a readiness service, and result rendering with loading, validation, error, and insufficient-data states.
+Set the next active feature and replace the placeholder file references before asking an agent to continue from repository context.
 
 Do not leave this blank if you want minimal-prompt continuation.
 
+## Exact handoff question
+
+What is the next feature or task that should become the active work item?
+
+## Stop condition for this stage
+
+The next active feature, stage, owner, and primary files are filled in with concrete values.
+
 ## Constraints or notes
 
-- Use readiness label plus probability and separate confidence as the output model.
-- Keep precipitation windows at 3, 7, 14, and 30 days.
-- Treat seasonal state separately from readiness label.
-- Treat saved spot status as user organization only, not a probability factor.
-- Keep expert-input and admin algorithm-adjustment as planned features, but defer detailed workflow design.
-- First curated species set: `boletus-edulis`, `boletus-reticulatus`, `cantharellus-cibarius`, `craterellus-tubaeformis`.
-- Initial readiness labels: `very-likely-worth-checking`, `worth-checking`, `possible-but-uncertain`, `unlikely-now`, `very-unlikely-right-now`, `unknown`.
+- Reset to a neutral handoff state after the mushroom-readiness slice reached commit readiness.
+- Update this file before starting the next non-trivial feature.
