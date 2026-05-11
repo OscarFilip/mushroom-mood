@@ -263,3 +263,57 @@ These labels give a clear practical answer without mixing seasonal state into re
 - Readiness API response shape
 - Start-page result rendering
 - Explanation copy and tests
+
+---
+
+## Decision
+
+Transient upstream weather fetch failures should be retried inside `ApiClient`, but only for safe requests and only for retryable network-level timeout or socket errors.
+
+## Why
+
+The mushroom-readiness route depends on SMHI endpoints that can intermittently fail to connect even when the same request succeeds moments later. Handling that at the shared fetch boundary reduces flaky `500` responses without spreading retry rules across routes and services.
+
+## Alternatives considered
+
+- Retry inside `rainHistoryService` only
+- Retry every failed request regardless of method or error type
+- Return upstream failures directly without retrying
+
+## Tradeoffs
+
+- Centralizing the policy in `ApiClient` keeps the retry behavior consistent for read-only upstream calls.
+- Limiting retries to safe methods avoids duplicating side effects for `POST` requests.
+- Restricting retries to network-level timeout and socket failures avoids masking deterministic HTTP or validation errors.
+
+## Impacted files or areas
+
+- `lib/repositories/apiClient.ts`
+- `tests/lib/repositories/apiClient.test.ts`
+- Mushroom-readiness and weather-history upstream GET flows that use `ApiClient`
+
+---
+
+## Decision
+
+The frontend should use Tailwind 4's CSS-first setup and should not keep unused legacy Tailwind config files when no custom theme or plugin configuration is needed.
+
+## Why
+
+The app was already on Tailwind 4 packages, but the stylesheet entry and surrounding config still looked like a Tailwind 3 setup. That left the repo with misleading configuration and made the styling failure harder to diagnose.
+
+## Alternatives considered
+
+- Keep the old config files in place after fixing only the CSS entry
+- Reintroduce a Tailwind config file even though the app is using only default theme behavior
+
+## Tradeoffs
+
+- Removing unused legacy config makes the setup easier to reason about.
+- If the app later needs custom theme tokens or plugins, a config file can be added back intentionally instead of lingering as dead configuration.
+
+## Impacted files or areas
+
+- `app/index.css`
+- `postcss.config.js`
+- Tailwind frontend styling setup
