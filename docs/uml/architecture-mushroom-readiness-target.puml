@@ -1,8 +1,8 @@
-@startuml architecture-mushroom-mood
-title Mushroom Mood Architecture Flow
+@startuml architecture-mushroom-readiness-target
+title Mushroom Readiness Target Architecture Flow
 
-' Status: Implemented
-' Purpose: Show the current main boundaries for the Mushroom Mood readiness flow, species catalog management, and transparent explanation of results.
+' Status: Planned
+' Purpose: Show the main boundaries for spot-first mushroom readiness, species catalog management, and transparent explanation of results.
 
 actor User
 actor "Restricted Admin" as Admin

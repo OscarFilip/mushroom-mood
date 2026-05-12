@@ -4,7 +4,7 @@ Update this file before you ask an agent to continue work from repository contex
 
 ## Active feature
 
-
+`<feature-name>`
 
 ## Stage
 
@@ -62,5 +62,5 @@ The next active feature, stage, owner, and primary files are filled in with conc
 
 ## Constraints or notes
 
-- Reset to a neutral handoff state after the Mushroom Mood rename slice reached commit readiness.
+- Reset to a neutral handoff state after the mushroom-readiness slice reached commit readiness.
 - Update this file before starting the next non-trivial feature.
