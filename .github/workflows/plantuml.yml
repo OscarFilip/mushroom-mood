@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   render:
@@ -47,19 +48,13 @@ jobs:
             -o out \
             "${diagrams[@]}"
 
-      - name: Commit generated SVGs when changed
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # This workflow only triggers on .puml changes, so committing SVG output will not loop.
-          if [ -z "$(git status --porcelain -- docs/uml/out)" ]; then
-            echo "No rendered diagram changes to commit"
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/uml/out
-          git commit -m "docs: update PlantUML SVGs [skip plantuml]"
-          git push
+      - name: Create PR for rendered SVGs when changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          add-paths: docs/uml/out
+          branch: chore/render-plantuml-svgs
+          commit-message: "docs: update PlantUML SVGs [skip plantuml]"
+          title: "docs: update PlantUML SVGs"
+          body: |
+            Regenerated PlantUML SVG outputs for updated diagrams.
+          delete-branch: true
