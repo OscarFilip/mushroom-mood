@@ -17,8 +17,7 @@ The repository includes:
 
 - feature-flow docs in [feature-flows.md](./feature-flows.md)
 - a current-state architecture diagram for nearest-station weather
-- a current-state architecture diagram for Mushroom Mood
-- a target-state architecture diagram for nearest-station weather
+- target-state architecture diagrams for nearest-station weather and mushroom readiness
 
 ## Available architecture diagrams
 
@@ -42,15 +41,15 @@ Rendered SVG: `./uml/out/architecture-nearest-station-weather-target.svg`
 
 Source: [architecture-nearest-station-weather-target.puml](./uml/architecture-nearest-station-weather-target.puml)
 
-### Current-state Mushroom Mood
+### Target-state mushroom readiness
 
-This diagram shows the implemented architecture for the spot-first Mushroom Mood flow. It covers readiness calculation boundaries, saved spots, supported species, weather evidence, and seasonal evidence.
+This diagram shows the planned architecture for the spot-first mushroom-readiness flow. It covers readiness calculation boundaries, saved spots, supported species, weather evidence, and seasonal evidence.
 
-Rendered SVG: `./uml/out/architecture-mushroom-mood.svg`
+Rendered SVG: `./uml/out/architecture-mushroom-readiness-target.svg`
 
-![Current-state Mushroom Mood architecture](./uml/out/architecture-mushroom-mood.svg)
+![Target-state mushroom readiness architecture](./uml/out/architecture-mushroom-readiness-target.svg)
 
-Source: [architecture-mushroom-mood.puml](./uml/architecture-mushroom-mood.puml)
+Source: [architecture-mushroom-readiness-target.puml](./uml/architecture-mushroom-readiness-target.puml)
 
 ## Working approach
 

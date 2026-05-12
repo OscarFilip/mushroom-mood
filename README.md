@@ -1,12 +1,18 @@
-# Mushroom Mood
+# Rain History
 
-Mushroom Mood is a Next.js app for checking weather signals that help indicate when a mushroom spot is worth visiting.
+Rain History is a Next.js project for checking weather signals that may help predict mushroom readiness in Sweden.
 
-**Weather signals for when your mushroom spot is worth checking.**
+The project is still in development. The current work focuses on planning the mushroom-readiness feature and keeping the code, diagrams, and decisions aligned.
 
 ## Status
 
-The app includes a working spot-check flow: choose a location and species, get a readiness result with probability, confidence, and seasonal state. Weather history data feeds the readiness calculation from SMHI.
+The app already includes weather-history code and tests. The next product slice is the mushroom-readiness flow.
+
+Current focus:
+
+- define the first user flow
+- lock down the main architecture
+- document decisions before wider implementation
 
 ## Documentation
 

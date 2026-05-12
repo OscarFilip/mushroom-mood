@@ -1,9 +1,9 @@
-jest.mock('@/lib/services/weatherHistoryService', () => ({
+jest.mock('@/lib/services/rainHistoryService', () => ({
   getHistoricalWeatherData: jest.fn(),
 }));
 
 import { getMushroomReadiness } from '@/lib/services/mushroomReadinessService';
-import { getHistoricalWeatherData } from '@/lib/services/weatherHistoryService';
+import { getHistoricalWeatherData } from '@/lib/services/rainHistoryService';
 
 const mockGetHistoricalWeatherData = getHistoricalWeatherData as jest.Mock;
 

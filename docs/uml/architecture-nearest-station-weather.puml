@@ -5,7 +5,7 @@ actor User
 participant "Weather History Page" as WeatherHistoryPage
 participant "WeatherHistory UI" as WeatherHistoryUi
 participant "Weather History API Route" as WeatherHistoryRoute
-participant "Weather History Service" as WeatherHistoryService
+participant "Rain History Service" as RainHistoryService
 participant "Weather Data Repository" as WeatherDataRepository
 participant "SMHI API Client" as SmhiApiClient
 participant "SMHI Open Data API" as SmhiOpenDataApi
@@ -20,21 +20,21 @@ alt Coordinates are invalid
   WeatherHistoryRoute --> WeatherHistoryUi: 400 Bad Request
   WeatherHistoryUi --> User: Show validation error
 else Coordinates are valid
-  WeatherHistoryRoute -> WeatherHistoryService: getHistoricalWeatherData(lat, lon)
-  WeatherHistoryService -> WeatherDataRepository: Fetch station catalogs and measurement data
+  WeatherHistoryRoute -> RainHistoryService: getHistoricalWeatherData(lat, lon)
+  RainHistoryService -> WeatherDataRepository: Fetch station catalogs and measurement data
   WeatherDataRepository -> SmhiApiClient: Request station catalogs and measurement data
   SmhiApiClient -> SmhiOpenDataApi: Fetch weather data from SMHI
   SmhiOpenDataApi --> SmhiApiClient: Station and measurement data
   SmhiApiClient --> WeatherDataRepository: Raw weather data
-  WeatherDataRepository --> WeatherHistoryService: Active station catalogs and parsed measurements
+  WeatherDataRepository --> RainHistoryService: Active station catalogs and parsed measurements
 
   alt At least one dataset is available
-    WeatherHistoryService -> WeatherHistoryService: Select nearest stations and build API response
-    WeatherHistoryService --> WeatherHistoryRoute: Rain and temperature response data
+    RainHistoryService -> RainHistoryService: Select nearest stations and build API response
+    RainHistoryService --> WeatherHistoryRoute: Rain and temperature response data
     WeatherHistoryRoute --> WeatherHistoryUi: 200 OK JSON response
     WeatherHistoryUi --> User: Render station info, charts, tables, and summary
   else No dataset could be returned
-    WeatherHistoryService --> WeatherHistoryRoute: Retrieval failure
+    RainHistoryService --> WeatherHistoryRoute: Retrieval failure
     WeatherHistoryRoute --> WeatherHistoryUi: Error response
     WeatherHistoryUi --> User: Show error state
   end

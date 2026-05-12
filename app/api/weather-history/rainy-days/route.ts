@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getHistoricalWeatherData } from '../../../../lib/services/weatherHistoryService';
+import { getHistoricalWeatherData } from '../../../../lib/services/rainHistoryService';
 import { validateCoordinates } from '../../../../lib/utils/validation';
 
 export async function GET(request: Request) {

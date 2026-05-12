@@ -88,5 +88,5 @@ Source: [feature-settings-page.puml](./uml/feature-settings-page.puml)
 
 - login and signup flows
 - weather search and filtering flows
-- weather history lookup and result flows
+- rain-history lookup and result flows
 - error and empty-state flows that change user behavior
