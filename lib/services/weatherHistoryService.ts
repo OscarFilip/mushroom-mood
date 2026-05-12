@@ -22,7 +22,7 @@ interface WeatherDataResponse {
 
 export async function getHistoricalWeatherData(latitude: number, longitude: number): Promise<WeatherDataResponse> {
   const repository = new WeatherDataRepository();
-  
+
   try {
     // Get stations for both parameters separately
     const [rainfallStationsData, temperatureStationsData] = await Promise.all([
@@ -36,7 +36,7 @@ export async function getHistoricalWeatherData(latitude: number, longitude: numb
     }
 
     // Create station objects for rainfall
-    const rainfallStations = rainfallStationsData?.station?.map(stationData => 
+    const rainfallStations = rainfallStationsData?.station?.map(stationData =>
       new WeatherStation({
         id: stationData.id,
         key: stationData.key,
@@ -49,7 +49,7 @@ export async function getHistoricalWeatherData(latitude: number, longitude: numb
     ) || [];
 
     // Create station objects for temperature
-    const temperatureStations = temperatureStationsData?.station?.map(stationData => 
+    const temperatureStations = temperatureStationsData?.station?.map(stationData =>
       new WeatherStation({
         id: stationData.id,
         key: stationData.key,
@@ -62,10 +62,10 @@ export async function getHistoricalWeatherData(latitude: number, longitude: numb
     ) || [];
 
     // Find closest stations for each parameter
-    const closestRainfallStation = rainfallStations.length > 0 
+    const closestRainfallStation = rainfallStations.length > 0
       ? WeatherStation.findClosestStation(rainfallStations, latitude, longitude)
       : null;
-    
+
     const closestTemperatureStation = temperatureStations.length > 0
       ? WeatherStation.findClosestStation(temperatureStations, latitude, longitude)
       : null;
