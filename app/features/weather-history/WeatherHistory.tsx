@@ -33,7 +33,7 @@ interface ApiWeatherDataResponse {
   } | null;
 }
 
-function RainHistory(): JSX.Element {
+function WeatherHistory(): JSX.Element {
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
   const [weatherData, setWeatherData] = useState<ApiWeatherDataResponse | null>(null);
@@ -284,4 +284,4 @@ function RainHistory(): JSX.Element {
   );
 }
 
-export default RainHistory;
+export default WeatherHistory;

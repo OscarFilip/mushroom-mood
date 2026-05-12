@@ -18,7 +18,7 @@ jest.mock('@/lib/repositories/weatherDataRepository', () => ({
 
 import { WeatherStation } from '@/lib/models/WeatherStation';
 import { WeatherDataRepository } from '@/lib/repositories/weatherDataRepository';
-import { getHistoricalWeatherData } from '@/lib/services/rainHistoryService';
+import { getHistoricalWeatherData } from '@/lib/services/weatherHistoryService';
 
 function createStationData(overrides: Record<string, unknown> = {}) {
   return {
