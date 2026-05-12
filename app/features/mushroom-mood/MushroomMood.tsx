@@ -38,7 +38,7 @@ function confidenceLabel(pct: number): string {
   return 'Low';
 }
 
-export default function MushroomReadiness(): JSX.Element {
+export default function MushroomMood(): JSX.Element {
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [speciesId, setSpeciesId] = useState<SpeciesId>('cantharellus-cibarius');

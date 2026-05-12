@@ -1,9 +1,9 @@
-jest.mock('@/lib/services/rainHistoryService', () => ({
+jest.mock('@/lib/services/weatherHistoryService', () => ({
   getHistoricalWeatherData: jest.fn(),
 }));
 
 import { GET } from '@/app/api/weather-history/rainy-days/route';
-import { getHistoricalWeatherData } from '@/lib/services/rainHistoryService';
+import { getHistoricalWeatherData } from '@/lib/services/weatherHistoryService';
 
 describe('GET /api/weather-history/rainy-days', () => {
   beforeEach(() => {
