@@ -10,7 +10,7 @@ actor User
 participant "Weather History Page" as WeatherHistoryPage
 participant "WeatherHistory UI" as WeatherHistoryUi
 participant "Weather History API Route" as WeatherHistoryRoute
-participant "Rain History Service" as RainHistoryService
+participant "Weather History Service" as WeatherHistoryService
 database "Station Catalog Store" as StationCatalogStore
 database "Weather Data Cache" as WeatherDataCache
 participant "Weather Data Repository" as WeatherDataRepository
@@ -27,42 +27,42 @@ alt Coordinates are invalid
   WeatherHistoryRoute --> WeatherHistoryUi: 400 Bad Request
   WeatherHistoryUi --> User: Show validation error
 else Coordinates are valid
-  WeatherHistoryRoute -> RainHistoryService: getHistoricalWeatherData(lat, lon)
-  RainHistoryService -> StationCatalogStore: Load station catalog
+  WeatherHistoryRoute -> WeatherHistoryService: getHistoricalWeatherData(lat, lon)
+  WeatherHistoryService -> StationCatalogStore: Load station catalog
 
   alt Station catalog missing or stale
-    RainHistoryService -> WeatherDataRepository: Fetch station catalog from source
+    WeatherHistoryService -> WeatherDataRepository: Fetch station catalog from source
     WeatherDataRepository -> SmhiApiClient: Request station catalog data
     SmhiApiClient -> SmhiOpenDataApi: Fetch station catalog from SMHI
     SmhiOpenDataApi --> SmhiApiClient: Station catalog data
     SmhiApiClient --> WeatherDataRepository: Raw station catalog data
-    WeatherDataRepository --> RainHistoryService: Parsed station catalog
-    RainHistoryService -> StationCatalogStore: Store refreshed station catalog
+    WeatherDataRepository --> WeatherHistoryService: Parsed station catalog
+    WeatherHistoryService -> StationCatalogStore: Store refreshed station catalog
   else Station catalog available
-    StationCatalogStore --> RainHistoryService: Station catalog
+    StationCatalogStore --> WeatherHistoryService: Station catalog
   end
 
-  RainHistoryService -> WeatherDataCache: Load cached weather data for nearest station request
+  WeatherHistoryService -> WeatherDataCache: Load cached weather data for nearest station request
 
   alt Cached weather data is missing or stale
-    RainHistoryService -> WeatherDataRepository: Fetch weather measurements from source
+    WeatherHistoryService -> WeatherDataRepository: Fetch weather measurements from source
     WeatherDataRepository -> SmhiApiClient: Request measurement data
     SmhiApiClient -> SmhiOpenDataApi: Fetch weather data from SMHI
     SmhiOpenDataApi --> SmhiApiClient: Measurement data
     SmhiApiClient --> WeatherDataRepository: Raw measurement data
-    WeatherDataRepository --> RainHistoryService: Parsed weather data
-    RainHistoryService -> WeatherDataCache: Store refreshed weather data
+    WeatherDataRepository --> WeatherHistoryService: Parsed weather data
+    WeatherHistoryService -> WeatherDataCache: Store refreshed weather data
   else Cached weather data is available
-    WeatherDataCache --> RainHistoryService: Cached weather data
+    WeatherDataCache --> WeatherHistoryService: Cached weather data
   end
 
   alt Weather data is available
-    RainHistoryService -> RainHistoryService: Select nearest stations and build API response
-    RainHistoryService --> WeatherHistoryRoute: Rain and temperature response data
+    WeatherHistoryService -> WeatherHistoryService: Select nearest stations and build API response
+    WeatherHistoryService --> WeatherHistoryRoute: Rain and temperature response data
     WeatherHistoryRoute --> WeatherHistoryUi: 200 OK JSON response
     WeatherHistoryUi --> User: Render station info, charts, tables, and summary
   else Weather data could not be returned
-    RainHistoryService --> WeatherHistoryRoute: Retrieval failure
+    WeatherHistoryService --> WeatherHistoryRoute: Retrieval failure
     WeatherHistoryRoute --> WeatherHistoryUi: Error response
     WeatherHistoryUi --> User: Show error state
   end

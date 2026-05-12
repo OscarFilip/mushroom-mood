@@ -1,4 +1,4 @@
-import { getHistoricalWeatherData } from './rainHistoryService';
+import { getHistoricalWeatherData } from './weatherHistoryService';
 import {
   CURATED_SPECIES,
   MushroomSpeciesProfile,
