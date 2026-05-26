@@ -1,3 +1,5 @@
+import { isVerboseLoggingEnabled, logExternalApiEvent, previewResponseBody } from '../utils/observability';
+
 export interface RequestOptions extends RequestInit {
   headers?: Record<string, string>;
   responseType?: 'json' | 'text';
@@ -12,10 +14,12 @@ const RETRYABLE_NETWORK_ERROR_CODES = new Set([
 export class ApiClient {
   private baseURL: string;
   private defaultHeaders: Record<string, string>
+  private sourceName: string;
 
-  constructor(baseURL: string, defaultHeaders: Record<string, string> = {}) {
+  constructor(baseURL: string, defaultHeaders: Record<string, string> = {}, sourceName?: string) {
     this.baseURL = baseURL;
     this.defaultHeaders = defaultHeaders;
+    this.sourceName = sourceName ?? new URL(baseURL).hostname;
   }
 
   async request<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -36,11 +40,40 @@ export class ApiClient {
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
+        logExternalApiEvent(this.sourceName, 'request', {
+          url,
+          method,
+          attempt,
+          maxAttempts,
+          responseType,
+        });
+
         const response: Response = await fetch(url, config);
+        const responsePreview = isVerboseLoggingEnabled()
+          ? await this.tryPreviewResponse(response)
+          : null;
         
         if (!response.ok) {
+          logExternalApiEvent(this.sourceName, 'error', {
+            url,
+            method,
+            attempt,
+            status: response.status,
+            statusText: response.statusText,
+            responsePreview,
+          });
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+
+        logExternalApiEvent(this.sourceName, 'response', {
+          url,
+          method,
+          attempt,
+          status: response.status,
+          statusText: response.statusText,
+          responseType,
+          responsePreview,
+        });
         
         if (responseType === 'text') {
           return await response.text() as T;
@@ -51,13 +84,24 @@ export class ApiClient {
         lastError = error;
 
         if (!this.shouldRetryRequest(error, attempt, maxAttempts)) {
-          console.error('API request failed:', error);
+          logExternalApiEvent(this.sourceName, 'error', {
+            url,
+            method,
+            attempt,
+            maxAttempts,
+            error: this.stringifyError(error),
+          });
           throw error;
         }
       }
     }
 
-    console.error('API request failed:', lastError);
+    logExternalApiEvent(this.sourceName, 'error', {
+      url,
+      method,
+      maxAttempts,
+      error: this.stringifyError(lastError),
+    });
     throw lastError;
   }
 
@@ -106,5 +150,28 @@ export class ApiClient {
       body: JSON.stringify(data),
       headers,
     });
+  }
+
+  private async tryPreviewResponse(response: Response): Promise<Record<string, unknown> | null> {
+    if (typeof response.clone !== 'function') {
+      return null;
+    }
+
+    try {
+      const bodyText = await response.clone().text();
+      return previewResponseBody(bodyText);
+    } catch (error) {
+      return {
+        previewError: this.stringifyError(error),
+      };
+    }
+  }
+
+  private stringifyError(error: unknown): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return String(error);
   }
 }

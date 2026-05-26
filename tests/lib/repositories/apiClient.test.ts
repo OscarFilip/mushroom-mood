@@ -1,17 +1,31 @@
 import { ApiClient } from '@/lib/repositories/apiClient';
 
 describe('ApiClient', () => {
+  let infoSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
+
   beforeEach(() => {
+    delete process.env.MUSHROOM_MOOD_LOG_LEVEL;
+    delete process.env.ENABLE_VERBOSE_API_LOGGING;
     global.fetch = jest.fn() as jest.Mock;
+    infoSpy = jest.spyOn(console, 'info').mockImplementation(() => undefined);
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    infoSpy.mockRestore();
+    errorSpy.mockRestore();
   });
 
   it('merges default headers and request headers for JSON requests', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
+      status: 200,
+      statusText: 'OK',
+      clone: jest.fn().mockReturnValue({
+        text: jest.fn().mockResolvedValue('{"ok":true}'),
+      }),
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
@@ -40,6 +54,11 @@ describe('ApiClient', () => {
   it('returns text when the response type is text', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
+      status: 200,
+      statusText: 'OK',
+      clone: jest.fn().mockReturnValue({
+        text: jest.fn().mockResolvedValue('plain response'),
+      }),
       text: jest.fn().mockResolvedValue('plain response'),
     });
 
@@ -61,6 +80,9 @@ describe('ApiClient', () => {
       ok: false,
       status: 503,
       statusText: 'Service Unavailable',
+      clone: jest.fn().mockReturnValue({
+        text: jest.fn().mockResolvedValue('{"error":"outage"}'),
+      }),
     });
 
     const client = new ApiClient('https://example.test');
@@ -77,6 +99,11 @@ describe('ApiClient', () => {
       .mockRejectedValueOnce(timeoutError)
       .mockResolvedValueOnce({
         ok: true,
+        status: 200,
+        statusText: 'OK',
+        clone: jest.fn().mockReturnValue({
+          text: jest.fn().mockResolvedValue('{"ok":true}'),
+        }),
         json: jest.fn().mockResolvedValue({ ok: true }),
       });
 
@@ -117,6 +144,11 @@ describe('ApiClient', () => {
   it('serializes JSON bodies for post requests', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
+      status: 200,
+      statusText: 'OK',
+      clone: jest.fn().mockReturnValue({
+        text: jest.fn().mockResolvedValue('{"created":true}'),
+      }),
       json: jest.fn().mockResolvedValue({ created: true }),
     });
 
@@ -134,5 +166,60 @@ describe('ApiClient', () => {
       },
     });
     expect(result).toEqual({ created: true });
+  });
+
+  it('does not log successful external request details by default', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      clone: jest.fn().mockReturnValue({
+        text: jest.fn().mockResolvedValue('{"station":[{"key":"abc"}]}'),
+      }),
+      json: jest.fn().mockResolvedValue({ station: [{ key: 'abc' }] }),
+    });
+
+    const client = new ApiClient('https://example.test', {}, 'smhi');
+
+    await client.get('/stations');
+
+    expect(infoSpy).not.toHaveBeenCalled();
+  });
+
+  it('logs request and response previews for external calls in debug mode', async () => {
+    process.env.MUSHROOM_MOOD_LOG_LEVEL = 'debug';
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      clone: jest.fn().mockReturnValue({
+        text: jest.fn().mockResolvedValue('{"station":[{"key":"abc"}]}'),
+      }),
+      json: jest.fn().mockResolvedValue({ station: [{ key: 'abc' }] }),
+    });
+
+    const client = new ApiClient('https://example.test', {}, 'smhi');
+
+    await client.get('/stations');
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[external-api:smhi] request',
+      expect.objectContaining({
+        url: 'https://example.test/stations',
+        method: 'GET',
+        attempt: 1,
+      }),
+    );
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[external-api:smhi] response',
+      expect.objectContaining({
+        url: 'https://example.test/stations',
+        status: 200,
+        responsePreview: expect.objectContaining({
+          preview: '{"station":[{"key":"abc"}]}',
+        }),
+      }),
+    );
   });
 });

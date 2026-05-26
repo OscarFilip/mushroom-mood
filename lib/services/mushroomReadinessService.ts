@@ -4,6 +4,7 @@ import {
   MushroomSpeciesProfile,
   SpeciesId,
 } from '../data/mushroomSpecies';
+import { logDebug, logInfo, summarizeMeasurements } from '../utils/observability';
 
 export type ReadinessLabel =
   | 'very-likely-worth-checking'
@@ -42,6 +43,29 @@ export async function getMushroomReadiness(
   const species = CURATED_SPECIES[speciesId];
   const now = new Date();
 
+  logDebug('[mushroom-readiness] request', {
+    latitude,
+    longitude,
+    speciesId,
+    speciesName: species.displayName,
+    speciesThresholds: {
+      seasonMonths: species.seasonMonths,
+      peakMonths: species.peakMonths,
+      minTempC: species.minTempC,
+      optimalMinTempC: species.optimalMinTempC,
+      optimalMaxTempC: species.optimalMaxTempC,
+      maxTempC: species.maxTempC,
+      minRain7DayMm: species.minRain7DayMm,
+      optimalRain7DayMm: species.optimalRain7DayMm,
+      minRain14DayMm: species.minRain14DayMm,
+    },
+    seasonalEvidence: {
+      source: 'static-species-calendar',
+      observationsFetched: false,
+      note: 'No SLU or ArtDatabanken observation fetch is implemented in the current readiness service.',
+    },
+  });
+
   const weatherData = await getHistoricalWeatherData(latitude, longitude);
 
   const rainMeasurements = weatherData.rainStation?.rainFallMeasurements ?? [];
@@ -50,7 +74,40 @@ export async function getMushroomReadiness(
   const hasRainData = rainMeasurements.length > 0;
   const hasTempData = tempMeasurements.length > 0;
 
+  logInfo('[mushroom-readiness] fetched evidence', {
+    speciesId,
+    latitude,
+    longitude,
+    rainStation: weatherData.rainStation
+      ? {
+          key: weatherData.rainStation.key,
+          name: weatherData.rainStation.name,
+          measurements: summarizeMeasurements(rainMeasurements, (measurement) => ({
+            date: measurement.date,
+            rainFall: measurement.rainFall,
+          })),
+        }
+      : null,
+    temperatureStation: weatherData.temperatureStation
+      ? {
+          key: weatherData.temperatureStation.key,
+          name: weatherData.temperatureStation.name,
+          measurements: summarizeMeasurements(tempMeasurements, (measurement) => ({
+            date: measurement.date,
+            temperature: measurement.temperature,
+          })),
+        }
+      : null,
+  });
+
   if (!hasRainData) {
+    logInfo('[mushroom-readiness] result', {
+      speciesId,
+      latitude,
+      longitude,
+      outcome: 'unknown',
+      reason: 'weather-data-unavailable',
+    });
     return buildUnknownResult(latitude, longitude, species, ['weather-data-unavailable']);
   }
 
@@ -74,6 +131,32 @@ export async function getMushroomReadiness(
   const limitations: string[] = [];
   if (!hasTempData) limitations.push('temperature-data-unavailable');
   if (rainWindows.dayCount < 14) limitations.push('limited-rainfall-history');
+
+  logInfo('[mushroom-readiness] computed result', {
+    speciesId,
+    latitude,
+    longitude,
+    seasonalEvidence: {
+      source: 'static-species-calendar',
+      observationsFetched: false,
+    },
+    derivedInputs: {
+      rainWindows,
+      avgTemp,
+      hasRainData,
+      hasTempData,
+      tempScore,
+      seasonalState,
+      weatherSupport,
+      seasonalSupport,
+    },
+    result: {
+      probability,
+      readinessLabel,
+      confidencePercent,
+      limitations,
+    },
+  });
 
   return {
     spot: { latitude, longitude },

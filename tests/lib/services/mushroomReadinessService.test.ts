@@ -24,8 +24,17 @@ function makeTempMeasurements(daysBack: number, temp: number) {
 }
 
 describe('getMushroomReadiness', () => {
+  let infoSpy: jest.SpyInstance;
+
   beforeEach(() => {
+    delete process.env.MUSHROOM_MOOD_LOG_LEVEL;
+    delete process.env.ENABLE_VERBOSE_API_LOGGING;
     jest.clearAllMocks();
+    infoSpy = jest.spyOn(console, 'info').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    infoSpy.mockRestore();
   });
 
   it('returns unknown when no rain data is available', async () => {
@@ -144,5 +153,78 @@ describe('getMushroomReadiness', () => {
 
     expect(result.result.confidencePercent).toBeGreaterThanOrEqual(5);
     expect(result.result.confidencePercent).toBeLessThanOrEqual(95);
+  });
+
+  it('logs fetched evidence and computed result details in normal mode', async () => {
+    mockGetHistoricalWeatherData.mockResolvedValue({
+      rainStation: {
+        key: 'rain-1',
+        name: 'Rain Station',
+        rainFallMeasurements: makeRainMeasurements(30, 3),
+      },
+      temperatureStation: {
+        key: 'temp-1',
+        name: 'Temp Station',
+        temperatureMeasurements: makeTempMeasurements(30, 12),
+      },
+    });
+
+    await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis');
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[mushroom-readiness] fetched evidence',
+      expect.objectContaining({
+        rainStation: expect.objectContaining({
+          key: 'rain-1',
+        }),
+        temperatureStation: expect.objectContaining({
+          key: 'temp-1',
+        }),
+      }),
+    );
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[mushroom-readiness] computed result',
+      expect.objectContaining({
+        derivedInputs: expect.objectContaining({
+          hasRainData: true,
+          hasTempData: true,
+        }),
+        result: expect.objectContaining({
+          readinessLabel: expect.any(String),
+          confidencePercent: expect.any(Number),
+        }),
+      }),
+    );
+    expect(infoSpy).not.toHaveBeenCalledWith(
+      '[mushroom-readiness] request',
+      expect.anything(),
+    );
+  });
+
+  it('logs request details in debug mode', async () => {
+    process.env.MUSHROOM_MOOD_LOG_LEVEL = 'debug';
+
+    mockGetHistoricalWeatherData.mockResolvedValue({
+      rainStation: {
+        key: 'rain-1',
+        name: 'Rain Station',
+        rainFallMeasurements: makeRainMeasurements(30, 3),
+      },
+      temperatureStation: {
+        key: 'temp-1',
+        name: 'Temp Station',
+        temperatureMeasurements: makeTempMeasurements(30, 12),
+      },
+    });
+
+    await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis');
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[mushroom-readiness] request',
+      expect.objectContaining({
+        speciesId: 'boletus-edulis',
+        speciesThresholds: expect.any(Object),
+      }),
+    );
   });
 });
