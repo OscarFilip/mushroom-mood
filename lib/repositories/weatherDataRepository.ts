@@ -1,5 +1,6 @@
 import { WeatherStation } from '../models/WeatherStation';
 import { ApiClient } from './apiClient';
+import { logDebug, summarizeMeasurements } from '../utils/observability';
 
 interface StationsResponse {
   station: Array<{
@@ -24,7 +25,7 @@ export class WeatherDataRepository {
   constructor() {
     this.version = 'latest';
     this.period = 'latest-months';
-    this.apiClient = new ApiClient('https://opendata-download-metobs.smhi.se/api');
+    this.apiClient = new ApiClient('https://opendata-download-metobs.smhi.se/api', {}, 'smhi');
   }
 
   public async getAvailableStationsAsync(parameter: string): Promise<StationsResponse> {
@@ -35,7 +36,18 @@ export class WeatherDataRepository {
     const totalStations = response.station?.length || 0;
     const activeStations = response.station?.filter(s => s.active) || [];
     
-    console.log(`📊 Parameter ${parameter} stations - Total: ${totalStations}, Active: ${activeStations.length}, Inactive: ${totalStations - activeStations.length}`);
+    logDebug('[smhi] station catalog', {
+      parameter,
+      totalStations,
+      activeStations: activeStations.length,
+      inactiveStations: totalStations - activeStations.length,
+      sample: activeStations.slice(0, 3).map((station) => ({
+        key: station.key,
+        name: station.name,
+        latitude: station.latitude,
+        longitude: station.longitude,
+      })),
+    });
     
     return {
       station: activeStations
@@ -98,6 +110,14 @@ export class WeatherDataRepository {
         .sort((a, b) => a[0].getTime() - b[0].getTime());
         
       station.rainFallMeasurements = sortedRain;
+      logDebug('[smhi] rainfall measurements', {
+        stationKey: station.key,
+        stationName: station.name,
+        summary: summarizeMeasurements(sortedRain, ([date, rainFall]) => ({
+          date: date.toISOString(),
+          rainFall,
+        })),
+      });
       return station;
 
     } catch (error) {
@@ -158,6 +178,14 @@ export class WeatherDataRepository {
       .sort((a, b) => a[0].getTime() - b[0].getTime());
       
     (station as any).temperatureMeasurements = sortedTemperature;
+    logDebug('[smhi] temperature measurements', {
+      stationKey: station.key,
+      stationName: station.name,
+      summary: summarizeMeasurements(sortedTemperature, ([date, temperature]) => ({
+        date: date.toISOString(),
+        temperature,
+      })),
+    });
     return station;
 
   } catch (error) {

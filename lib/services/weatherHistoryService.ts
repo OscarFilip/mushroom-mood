@@ -1,5 +1,6 @@
 import { WeatherDataRepository } from '../repositories/weatherDataRepository';
 import { WeatherStation } from '../models/WeatherStation';
+import { logDebug, logInfo, summarizeMeasurements } from '../utils/observability';
 
 interface BaseWeatherStation {
   id: number | null;
@@ -19,6 +20,14 @@ interface WeatherDataResponse {
     temperatureMeasurements: Array<{ date: string; temperature: number }>;
   }) | null;
 }
+
+type RainWeatherStationResponse = BaseWeatherStation & {
+  rainFallMeasurements: Array<{ date: string; rainFall: number }>;
+};
+
+type TemperatureWeatherStationResponse = BaseWeatherStation & {
+  temperatureMeasurements: Array<{ date: string; temperature: number }>;
+};
 
 export async function getHistoricalWeatherData(latitude: number, longitude: number): Promise<WeatherDataResponse> {
   const repository = new WeatherDataRepository();
@@ -70,6 +79,27 @@ export async function getHistoricalWeatherData(latitude: number, longitude: numb
       ? WeatherStation.findClosestStation(temperatureStations, latitude, longitude)
       : null;
 
+    logInfo('[weather-history] selected stations', {
+      latitude,
+      longitude,
+      rainStation: closestRainfallStation
+        ? {
+            key: closestRainfallStation.key,
+            name: closestRainfallStation.name,
+            latitude: closestRainfallStation.latitude,
+            longitude: closestRainfallStation.longitude,
+          }
+        : null,
+      temperatureStation: closestTemperatureStation
+        ? {
+            key: closestTemperatureStation.key,
+            name: closestTemperatureStation.name,
+            latitude: closestTemperatureStation.latitude,
+            longitude: closestTemperatureStation.longitude,
+          }
+        : null,
+    });
+
     if (!closestRainfallStation && !closestTemperatureStation) {
       throw new Error('No nearby weather stations found');
     }
@@ -106,10 +136,35 @@ export async function getHistoricalWeatherData(latitude: number, longitude: numb
       throw new Error('Failed to retrieve any weather data from available stations');
     }
 
-    return {
-      rainStation: rainStation ? transformWeatherStationForApi(rainStation, true, false) : null,
-      temperatureStation: temperatureStation ? transformWeatherStationForApi(temperatureStation, false, true) : null
+    const result: WeatherDataResponse = {
+      rainStation: rainStation ? transformRainWeatherStationForApi(rainStation) : null,
+      temperatureStation: temperatureStation ? transformTemperatureWeatherStationForApi(temperatureStation) : null,
     };
+
+    logDebug('[weather-history] response', {
+      latitude,
+      longitude,
+      rainStation: result.rainStation
+        ? {
+            key: result.rainStation.key,
+            measurementSummary: summarizeMeasurements(result.rainStation.rainFallMeasurements, (measurement) => ({
+              date: measurement.date,
+              rainFall: measurement.rainFall,
+            })),
+          }
+        : null,
+      temperatureStation: result.temperatureStation
+        ? {
+            key: result.temperatureStation.key,
+            measurementSummary: summarizeMeasurements(result.temperatureStation.temperatureMeasurements, (measurement) => ({
+              date: measurement.date,
+              temperature: measurement.temperature,
+            })),
+          }
+        : null,
+    });
+
+    return result;
 
   } catch (error) {
     console.error('Error in getHistoricalWeatherData:', error);
@@ -117,7 +172,7 @@ export async function getHistoricalWeatherData(latitude: number, longitude: numb
   }
 }
 
-function transformWeatherStationForApi(station: WeatherStation, includeRain: boolean = false, includeTemp: boolean = false) {
+function transformRainWeatherStationForApi(station: WeatherStation): RainWeatherStationResponse {
   return {
     id: station.id,
     key: station.key,
@@ -126,17 +181,27 @@ function transformWeatherStationForApi(station: WeatherStation, includeRain: boo
     latitude: station.latitude,
     longitude: station.longitude,
     active: station.active,
-    ...(includeRain && {
-      rainFallMeasurements: station.rainFallMeasurements?.map(([date, rainFall]) => ({
-        date: date.toISOString(),
-        rainFall
-      })) || []
-    }),
-    ...(includeTemp && {
-      temperatureMeasurements: (station as any).temperatureMeasurements?.map(([date, temperature]: [Date, number]) => ({
-        date: date.toISOString(),
-        temperature
-      })) || []
-    })
+    rainFallMeasurements: station.rainFallMeasurements.map(([date, rainFall]) => ({
+      date: date.toISOString(),
+      rainFall,
+    })),
+  };
+}
+
+function transformTemperatureWeatherStationForApi(
+  station: WeatherStation & { temperatureMeasurements?: Array<[Date, number]> },
+): TemperatureWeatherStationResponse {
+  return {
+    id: station.id,
+    key: station.key,
+    name: station.name,
+    title: station.title,
+    latitude: station.latitude,
+    longitude: station.longitude,
+    active: station.active,
+    temperatureMeasurements: (station.temperatureMeasurements ?? []).map(([date, temperature]) => ({
+      date: date.toISOString(),
+      temperature,
+    })),
   };
 }

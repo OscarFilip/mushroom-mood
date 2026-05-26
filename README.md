@@ -23,6 +23,25 @@ Start the app:
 npm run dev
 ```
 
+Logging modes:
+
+- Normal logging is the default. Just run `npm run dev`.
+- Debug logging shows the extra API and payload tracing logs.
+
+PowerShell examples:
+
+```powershell
+# Normal logging
+npm run dev
+
+# Debug logging for this PowerShell window
+$env:MUSHROOM_MOOD_LOG_LEVEL='debug'
+npm run dev
+
+# Turn debug logging off again in this PowerShell window
+Remove-Item Env:MUSHROOM_MOOD_LOG_LEVEL
+```
+
 Useful scripts:
 
 - `npm test`
