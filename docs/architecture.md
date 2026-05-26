@@ -18,6 +18,7 @@ The repository includes:
 - feature-flow docs in [feature-flows.md](./feature-flows.md)
 - a current-state architecture diagram for nearest-station weather
 - a current-state architecture diagram for Mushroom Mood
+- a target-state architecture diagram for Mushroom Mood
 - a target-state architecture diagram for nearest-station weather
 
 ## Available architecture diagrams
@@ -44,13 +45,23 @@ Source: [architecture-nearest-station-weather-target.puml](./uml/architecture-ne
 
 ### Current-state Mushroom Mood
 
-This diagram shows the implemented architecture for the spot-first Mushroom Mood flow. It covers readiness calculation boundaries, saved spots, supported species, weather evidence, and seasonal evidence.
+This diagram shows the implemented architecture for the current spot-check slice. It covers the UI, readiness route, readiness service, curated in-repo species rules, and SMHI-backed weather history flow that exists in code now.
 
 Rendered SVG: `./uml/out/architecture-mushroom-mood.svg`
 
 ![Current-state Mushroom Mood architecture](./uml/out/architecture-mushroom-mood.svg)
 
 Source: [architecture-mushroom-mood.puml](./uml/architecture-mushroom-mood.puml)
+
+### Target-state Mushroom Mood
+
+This diagram shows the planned broader Mushroom Mood architecture. It adds saved spots, observation-backed seasonality, and restricted species-management boundaries that are not implemented yet.
+
+Rendered SVG: `./uml/out/architecture-mushroom-mood-target.svg`
+
+![Target-state Mushroom Mood architecture](./uml/out/architecture-mushroom-mood-target.svg)
+
+Source: [architecture-mushroom-mood-target.puml](./uml/architecture-mushroom-mood-target.puml)
 
 ## Working approach
 

@@ -1,58 +1,44 @@
 @startuml architecture-mushroom-mood
-title Mushroom Mood Architecture Flow
+title Mushroom Mood Current-State Architecture Flow
 
 ' Status: Implemented
-' Purpose: Show the current main boundaries for the Mushroom Mood readiness flow, species catalog management, and transparent explanation of results.
+' Purpose: Show the current implemented boundaries for the Mushroom Mood readiness flow.
 
 actor User
-actor "Restricted Admin" as Admin
-participant "Start, Weather, and Mushroom Pages" as AppUi
+participant "Mushroom Mood UI" as AppUi
 participant "Mushroom Readiness API Route" as ReadinessRoute
 participant "Readiness Service" as ReadinessService
-database "Saved Spot Store" as SavedSpotStore
-database "Supported Species Catalog" as SpeciesCatalog
-database "Species Profile Rules" as SpeciesProfileRules
-participant "Weather History Repository" as WeatherHistoryRepository
-participant "Seasonal Observation Repository" as SeasonalObservationRepository
+database "Curated Species Catalog and Rules" as SpeciesCatalog
+participant "Weather History Service" as WeatherHistoryService
+participant "Weather Data Repository" as WeatherDataRepository
 participant "SMHI API" as SmhiApi
-participant "SLU or ArtDatabanken APIs" as ObservationApis
-participant "Species Management API Route" as SpeciesManagementRoute
 
 User -> AppUi: Choose spot and species
 AppUi -> ReadinessRoute: Request readiness, confidence, and explanation data
 ReadinessRoute -> ReadinessService: Build result for selected spot and species
-ReadinessService -> SavedSpotStore: Load saved spot context when relevant
-ReadinessService -> SpeciesCatalog: Load supported species metadata
-ReadinessService -> SpeciesProfileRules: Load species-specific timing and sensitivity rules
-ReadinessService -> WeatherHistoryRepository: Load recent weather evidence for the spot
-WeatherHistoryRepository -> SmhiApi: Fetch or refresh weather data
-SmhiApi --> WeatherHistoryRepository: Weather history data
-ReadinessService -> SeasonalObservationRepository: Load seasonal observation evidence near the spot
-SeasonalObservationRepository -> ObservationApis: Fetch or refresh species observations
-ObservationApis --> SeasonalObservationRepository: Seasonal observation data
+ReadinessService -> SpeciesCatalog: Load curated species metadata and static seasonal rules
+ReadinessService -> WeatherHistoryService: Load recent weather evidence for the spot
+WeatherHistoryService -> WeatherDataRepository: Select stations and request measurements
+WeatherDataRepository -> SmhiApi: Fetch station catalog and weather history data
+SmhiApi --> WeatherDataRepository: Weather history data
+WeatherDataRepository --> WeatherHistoryService: Station measurements
+WeatherHistoryService --> ReadinessService: Rainfall and temperature history
 
 alt Required inputs are available
-  ReadinessService -> ReadinessService: Combine seasonal, weather, and species-profile factors
+  ReadinessService -> ReadinessService: Combine static seasonal rules, weather, and species thresholds
   ReadinessService --> ReadinessRoute: Readiness label, probability, confidence, and explanation inputs
   ReadinessRoute --> AppUi: 200 OK result payload
-  AppUi --> User: Show main result and deeper explanation views
+  AppUi --> User: Show result, confidence, and short explanation
 else Inputs are partial or missing
   ReadinessService --> ReadinessRoute: Low-confidence or unavailable result with missing-data reasons
   ReadinessRoute --> AppUi: Result payload with limitations
   AppUi --> User: Show low-confidence or unavailable state
 end
 
-Admin -> AppUi: Open restricted species management
-AppUi -> SpeciesManagementRoute: Search taxon and save supported species
-SpeciesManagementRoute -> SpeciesCatalog: Create or update supported species entry
-SpeciesManagementRoute -> SpeciesProfileRules: Create or update species-specific rules
-SpeciesManagementRoute --> AppUi: Confirm catalog update
-
-note right of SpeciesProfileRules
-Detailed expert submission and approval workflow
-is intentionally deferred.
-This diagram only fixes the stable boundary where
-species-specific rules are stored and adjusted.
+note right of ReadinessService
+Seasonal state is currently derived from static
+season months in the curated in-repo species catalog.
+No SLU or ArtDatabanken observation fetch is implemented yet.
 end note
 
 @enduml
