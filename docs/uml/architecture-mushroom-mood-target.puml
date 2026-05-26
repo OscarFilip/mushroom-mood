@@ -1,0 +1,58 @@
+@startuml architecture-mushroom-mood-target
+title Mushroom Mood Target Architecture Flow
+
+' Status: Planned
+' Purpose: Show the planned main boundaries for the broader Mushroom Mood flow, including saved spots, observation-backed seasonality, and restricted species management.
+
+actor User
+actor "Restricted Admin" as Admin
+participant "Start, Weather, and Mushroom Pages" as AppUi
+participant "Mushroom Readiness API Route" as ReadinessRoute
+participant "Readiness Service" as ReadinessService
+database "Saved Spot Store" as SavedSpotStore
+database "Supported Species Catalog" as SpeciesCatalog
+database "Species Profile Rules" as SpeciesProfileRules
+participant "Weather History Repository" as WeatherHistoryRepository
+participant "Seasonal Observation Repository" as SeasonalObservationRepository
+participant "SMHI API" as SmhiApi
+participant "SLU or ArtDatabanken APIs" as ObservationApis
+participant "Species Management API Route" as SpeciesManagementRoute
+
+User -> AppUi: Choose spot and species
+AppUi -> ReadinessRoute: Request readiness, confidence, and explanation data
+ReadinessRoute -> ReadinessService: Build result for selected spot and species
+ReadinessService -> SavedSpotStore: Load saved spot context when relevant
+ReadinessService -> SpeciesCatalog: Load supported species metadata
+ReadinessService -> SpeciesProfileRules: Load species-specific timing and sensitivity rules
+ReadinessService -> WeatherHistoryRepository: Load recent weather evidence for the spot
+WeatherHistoryRepository -> SmhiApi: Fetch or refresh weather data
+SmhiApi --> WeatherHistoryRepository: Weather history data
+ReadinessService -> SeasonalObservationRepository: Load seasonal observation evidence near the spot
+SeasonalObservationRepository -> ObservationApis: Fetch or refresh species observations
+ObservationApis --> SeasonalObservationRepository: Seasonal observation data
+
+alt Required inputs are available
+  ReadinessService -> ReadinessService: Combine seasonal, weather, and species-profile factors
+  ReadinessService --> ReadinessRoute: Readiness label, probability, confidence, and explanation inputs
+  ReadinessRoute --> AppUi: 200 OK result payload
+  AppUi --> User: Show main result and deeper explanation views
+else Inputs are partial or missing
+  ReadinessService --> ReadinessRoute: Low-confidence or unavailable result with missing-data reasons
+  ReadinessRoute --> AppUi: Result payload with limitations
+  AppUi --> User: Show low-confidence or unavailable state
+end
+
+Admin -> AppUi: Open restricted species management
+AppUi -> SpeciesManagementRoute: Search taxon and save supported species
+SpeciesManagementRoute -> SpeciesCatalog: Create or update supported species entry
+SpeciesManagementRoute -> SpeciesProfileRules: Create or update species-specific rules
+SpeciesManagementRoute --> AppUi: Confirm catalog update
+
+note right of SpeciesProfileRules
+Detailed expert submission and approval workflow
+is intentionally deferred.
+This diagram only fixes the stable boundary where
+species-specific rules are stored and adjusted.
+end note
+
+@enduml
