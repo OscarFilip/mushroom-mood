@@ -55,7 +55,7 @@ Source: [architecture-mushroom-mood.puml](./uml/architecture-mushroom-mood.puml)
 
 ### Target-state Mushroom Mood
 
-This diagram shows the planned broader Mushroom Mood architecture. It adds saved spots, observation-backed seasonality, and restricted species-management boundaries that are not implemented yet.
+This diagram shows the planned broader Mushroom Mood architecture. It adds saved spots, observation-backed seasonality, a derived seasonal-evidence cache, degraded fallback to the static species calendar, and restricted species-management boundaries that are not implemented yet.
 
 Rendered SVG: `./uml/out/architecture-mushroom-mood-target.svg`
 
