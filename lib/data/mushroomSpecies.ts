@@ -8,6 +8,13 @@ export interface MushroomSpeciesProfile {
   id: SpeciesId;
   displayName: string;
   latinName: string;
+  /**
+   * ArtDatabanken Dyntaxa taxon ID. Used for runtime observation search.
+   * IDs were confirmed (boletus-edulis) or estimated from Dyntaxa records and
+   * should be verified against the live ArtDatabanken taxon search endpoint
+   * during restricted species onboarding for each species.
+   */
+  taxonId: number;
   seasonMonths: number[];
   peakMonths: number[];
   minTempC: number;
@@ -24,6 +31,7 @@ export const CURATED_SPECIES: Record<SpeciesId, MushroomSpeciesProfile> = {
     id: 'boletus-edulis',
     displayName: 'Porcini',
     latinName: 'Boletus edulis',
+    taxonId: 245630, // confirmed via live ArtDatabanken radius probe (Ullared, 2024)
     seasonMonths: [7, 8, 9, 10],
     peakMonths: [8, 9],
     minTempC: 10,
@@ -38,6 +46,7 @@ export const CURATED_SPECIES: Record<SpeciesId, MushroomSpeciesProfile> = {
     id: 'boletus-reticulatus',
     displayName: 'Summer Porcini',
     latinName: 'Boletus reticulatus',
+    taxonId: 3135, // verified via ArtDatabanken Taxon Search (2026-06-04)
     seasonMonths: [6, 7, 8, 9],
     peakMonths: [6, 7, 8],
     minTempC: 15,
@@ -52,6 +61,7 @@ export const CURATED_SPECIES: Record<SpeciesId, MushroomSpeciesProfile> = {
     id: 'cantharellus-cibarius',
     displayName: 'Golden Chanterelle',
     latinName: 'Cantharellus cibarius',
+    taxonId: 3213, // verified via ArtDatabanken Taxon Search (2026-06-04)
     seasonMonths: [6, 7, 8, 9],
     peakMonths: [7, 8],
     minTempC: 12,
@@ -66,6 +76,7 @@ export const CURATED_SPECIES: Record<SpeciesId, MushroomSpeciesProfile> = {
     id: 'craterellus-tubaeformis',
     displayName: 'Yellowfoot',
     latinName: 'Craterellus tubaeformis',
+    taxonId: 3217, // verified via ArtDatabanken Taxon Search (2026-06-04)
     seasonMonths: [9, 10, 11],
     peakMonths: [9, 10],
     minTempC: 3,

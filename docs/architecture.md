@@ -45,7 +45,7 @@ Source: [architecture-nearest-station-weather-target.puml](./uml/architecture-ne
 
 ### Current-state Mushroom Mood
 
-This diagram shows the implemented architecture for the current spot-check slice. It covers the UI, readiness route, readiness service, curated in-repo species rules, and SMHI-backed weather history flow that exists in code now.
+This diagram shows the implemented architecture for the current spot-check slice. It covers the UI, readiness route, readiness service, curated in-repo species rules, SMHI-backed weather history flow, the seasonal observation repository, the current in-memory seasonal evidence cache, and the static-calendar fallback that exists in code now.
 
 Rendered SVG: `./uml/out/architecture-mushroom-mood.svg`
 
@@ -55,7 +55,7 @@ Source: [architecture-mushroom-mood.puml](./uml/architecture-mushroom-mood.puml)
 
 ### Target-state Mushroom Mood
 
-This diagram shows the planned broader Mushroom Mood architecture. It adds saved spots, observation-backed seasonality, a derived seasonal-evidence cache, degraded fallback to the static species calendar, and restricted species-management boundaries that are not implemented yet.
+This diagram shows the planned broader Mushroom Mood architecture beyond the current implementation. It keeps observation-backed seasonality and degraded fallback, while adding saved spots, a persistent derived seasonal-evidence cache, and restricted species-management boundaries that are not implemented yet.
 
 Rendered SVG: `./uml/out/architecture-mushroom-mood-target.svg`
 

@@ -52,7 +52,7 @@ Source: [feature-mushroom-page.puml](./uml/feature-mushroom-page.puml)
 
 ### Mushroom probability detail
 
-This supporting diagram shows what happens after a user opens a mushroom detail or readiness explanation and wants to understand why a result appears. It also includes the planned expert-input path.
+This supporting diagram shows what happens after a user opens a mushroom detail or readiness explanation and wants to understand why a result appears. It now reflects the implemented explanation transparency flow and still includes the later planned expert-input path.
 
 Rendered SVG: `./uml/out/feature-mushroom-probability.svg`
 

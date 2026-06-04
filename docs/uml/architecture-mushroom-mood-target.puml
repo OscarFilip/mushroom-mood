@@ -2,7 +2,7 @@
 title Mushroom Mood Target Architecture Flow
 
 ' Status: Planned
-' Purpose: Show the planned main boundaries for the broader Mushroom Mood flow, including saved spots, observation-backed seasonality, and restricted species management.
+' Purpose: Show the planned next-step boundaries beyond the implemented observation-backed seasonality flow.
 
 actor User
 actor "Restricted Admin" as Admin
@@ -80,14 +80,16 @@ end note
 note right of SeasonalEvidenceCache
 Cache stores processed seasonal evidence,
 not raw observation payloads.
-Long-run target: persistent cache.
-Initial shortcut: in-memory cache if needed.
+Current implementation uses an in-memory cache.
+Target state replaces that with persistent derived evidence.
 end note
 
 note right of ReadinessService
 If seasonal evidence is sparse, missing, or unavailable
 without reusable stale cache, the service falls back
 to the static species calendar and lowers confidence.
+Target state keeps that boundary but can refine how
+confidence reacts to wider radii, wider lookback, or cache freshness.
 end note
 
 @enduml

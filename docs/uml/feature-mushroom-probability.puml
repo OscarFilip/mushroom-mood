@@ -1,7 +1,7 @@
 @startuml feature-mushroom-probability
 title Mushroom Probability Detail Feature Flow
 
-' Status: Planned
+' Status: Mixed - implemented explanation flow, later contributor/admin flow still planned
 
 actor User
 actor "Privileged Contributor" as Contributor
@@ -16,6 +16,7 @@ MushroomDetailView --> User: Show readiness label, probability, confidence, and 
 
 User -> ProbabilityExplanation: Open explanation
 ProbabilityExplanation --> User: Show understandable seasonal, weather, and species-profile inputs and how they affect the result
+ProbabilityExplanation --> User: Show seasonal evidence quality, radius used, lookback, raw observations, weighted score, and distinct years
 
 alt User only wants transparency
 	ProbabilityExplanation --> User: Explain why readiness and confidence are high, medium, or low

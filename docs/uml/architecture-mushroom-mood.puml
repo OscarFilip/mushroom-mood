@@ -2,7 +2,7 @@
 title Mushroom Mood Current-State Architecture Flow
 
 ' Status: Implemented
-' Purpose: Show the current implemented boundaries for the Mushroom Mood readiness flow.
+' Purpose: Show the current implemented boundaries for the Mushroom Mood readiness flow after observation-backed seasonality was added.
 
 actor User
 participant "Mushroom Mood UI" as AppUi
@@ -11,24 +11,44 @@ participant "Readiness Service" as ReadinessService
 database "Curated Species Catalog and Rules" as SpeciesCatalog
 participant "Weather History Service" as WeatherHistoryService
 participant "Weather Data Repository" as WeatherDataRepository
+participant "Seasonal Observation Repository" as SeasonalObservationRepository
+database "In-Memory Seasonal Evidence Cache" as SeasonalEvidenceCache
 participant "SMHI API" as SmhiApi
+participant "ArtDatabanken Observation Search API" as ObservationSearchApi
 
 User -> AppUi: Choose spot and species
 AppUi -> ReadinessRoute: Request readiness, confidence, and explanation data
 ReadinessRoute -> ReadinessService: Build result for selected spot and species
-ReadinessService -> SpeciesCatalog: Load curated species metadata and static seasonal rules
+ReadinessService -> SpeciesCatalog: Load curated species metadata and seasonal rules
 ReadinessService -> WeatherHistoryService: Load recent weather evidence for the spot
 WeatherHistoryService -> WeatherDataRepository: Select stations and request measurements
 WeatherDataRepository -> SmhiApi: Fetch station catalog and weather history data
 SmhiApi --> WeatherDataRepository: Weather history data
 WeatherDataRepository --> WeatherHistoryService: Station measurements
 WeatherHistoryService --> ReadinessService: Rainfall and temperature history
+ReadinessService -> SeasonalObservationRepository: Load seasonal observation evidence for the spot and species
+SeasonalObservationRepository -> SeasonalEvidenceCache: Read processed seasonal evidence
+
+alt Fresh seasonal evidence is cached
+  SeasonalEvidenceCache --> SeasonalObservationRepository: Fresh processed seasonal evidence
+else Cache is missing or expired
+  SeasonalObservationRepository -> ObservationSearchApi: Search observations by stored taxon ID, spot, radius, and lookback policy
+  ObservationSearchApi --> SeasonalObservationRepository: Observation records
+  SeasonalObservationRepository -> SeasonalEvidenceCache: Store processed seasonal evidence in memory
+  SeasonalEvidenceCache --> SeasonalObservationRepository: Cached processed seasonal evidence
+else Live refresh fails but stale cache is reusable
+  SeasonalEvidenceCache --> SeasonalObservationRepository: Stale processed seasonal evidence with freshness limitation
+end
+
+SeasonalObservationRepository --> ReadinessService: Seasonal evidence summary
 
 alt Required inputs are available
-  ReadinessService -> ReadinessService: Combine static seasonal rules, weather, and species thresholds
+  ReadinessService -> ReadinessService: Use observation-backed seasonality when evidence is sufficient
+  ReadinessService -> SpeciesCatalog: Fall back to static seasonal timing when observation evidence is sparse or missing
+  ReadinessService -> ReadinessService: Combine seasonal evidence, weather, and species thresholds
   ReadinessService --> ReadinessRoute: Readiness label, probability, confidence, and explanation inputs
   ReadinessRoute --> AppUi: 200 OK result payload
-  AppUi --> User: Show result, confidence, and short explanation
+  AppUi --> User: Show result, confidence, limitations, and seasonal evidence details
 else Inputs are partial or missing
   ReadinessService --> ReadinessRoute: Low-confidence or unavailable result with missing-data reasons
   ReadinessRoute --> AppUi: Result payload with limitations
@@ -36,9 +56,18 @@ else Inputs are partial or missing
 end
 
 note right of ReadinessService
-Seasonal state is currently derived from static
-season months in the curated in-repo species catalog.
-No SLU or ArtDatabanken observation fetch is implemented yet.
+Observation-backed seasonality is the primary path.
+If evidence is sparse or missing, the service falls back
+to static season months in the curated species catalog
+and lowers confidence.
+The readiness response exposes grouped seasonal evidence
+details for transparency in the UI.
+end note
+
+note right of SeasonalEvidenceCache
+Current implementation uses an in-memory cache for
+processed seasonal evidence.
+The long-run target remains a persistent derived-evidence cache.
 end note
 
 @enduml
