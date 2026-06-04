@@ -63,17 +63,22 @@ describe('getMushroomReadiness', () => {
   });
 
   it('returns very-unlikely-right-now for out-of-season species regardless of weather', async () => {
-    // April (month 4) — cantharellus-cibarius season is June-September
-    mockGetHistoricalWeatherData.mockResolvedValue({
-      rainStation: { rainFallMeasurements: makeRainMeasurements(30, 5) },
-      temperatureStation: { temperatureMeasurements: makeTempMeasurements(30, 16) },
-    });
+    jest.useFakeTimers().setSystemTime(new Date('2026-04-15T12:00:00Z'));
+    try {
+      // April (month 4) - cantharellus-cibarius season is June-September
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(30, 5) },
+        temperatureStation: { temperatureMeasurements: makeTempMeasurements(30, 16) },
+      });
 
-    const result = await getMushroomReadiness(57.1134, 12.7732, 'cantharellus-cibarius');
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'cantharellus-cibarius');
 
-    expect(result.result.readinessLabel).toBe('very-unlikely-right-now');
-    expect(result.result.seasonalState).toBe('out-of-season');
-    expect(result.result.probabilityPercent).toBeGreaterThan(0);
+      expect(result.result.readinessLabel).toBe('very-unlikely-right-now');
+      expect(result.result.seasonalState).toBe('out-of-season');
+      expect(result.result.probabilityPercent).toBeGreaterThan(0);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('returns correct species metadata in the response', async () => {

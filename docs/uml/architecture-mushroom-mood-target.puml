@@ -14,8 +14,10 @@ database "Supported Species Catalog" as SpeciesCatalog
 database "Species Profile Rules" as SpeciesProfileRules
 participant "Weather History Repository" as WeatherHistoryRepository
 participant "Seasonal Observation Repository" as SeasonalObservationRepository
+database "Seasonal Evidence Cache" as SeasonalEvidenceCache
 participant "SMHI API" as SmhiApi
-participant "SLU or ArtDatabanken APIs" as ObservationApis
+participant "ArtDatabanken Observation Search API" as ObservationSearchApi
+participant "ArtDatabanken Taxon Search API" as TaxonSearchApi
 participant "Species Management API Route" as SpeciesManagementRoute
 
 User -> AppUi: Choose spot and species
@@ -28,8 +30,19 @@ ReadinessService -> WeatherHistoryRepository: Load recent weather evidence for t
 WeatherHistoryRepository -> SmhiApi: Fetch or refresh weather data
 SmhiApi --> WeatherHistoryRepository: Weather history data
 ReadinessService -> SeasonalObservationRepository: Load seasonal observation evidence near the spot
-SeasonalObservationRepository -> ObservationApis: Fetch or refresh species observations
-ObservationApis --> SeasonalObservationRepository: Seasonal observation data
+SeasonalObservationRepository -> SpeciesCatalog: Read stored taxon ID for supported species
+SeasonalObservationRepository -> SeasonalEvidenceCache: Read derived evidence by taxon, spot, radius, and time policy
+
+alt Fresh derived evidence is cached
+  SeasonalEvidenceCache --> SeasonalObservationRepository: Fresh processed seasonal evidence
+else Cache is missing or expired
+  SeasonalObservationRepository -> ObservationSearchApi: Search observations by taxon ID, spot, radius, and time policy
+  ObservationSearchApi --> SeasonalObservationRepository: Seasonal observation data
+  SeasonalObservationRepository -> SeasonalEvidenceCache: Store processed seasonal evidence with TTL
+  SeasonalEvidenceCache --> SeasonalObservationRepository: Cached processed seasonal evidence
+else Live refresh fails but stale cache is reusable
+  SeasonalEvidenceCache --> SeasonalObservationRepository: Stale processed seasonal evidence with freshness limitation
+end
 
 alt Required inputs are available
   ReadinessService -> ReadinessService: Combine seasonal, weather, and species-profile factors
@@ -37,6 +50,7 @@ alt Required inputs are available
   ReadinessRoute --> AppUi: 200 OK result payload
   AppUi --> User: Show main result and deeper explanation views
 else Inputs are partial or missing
+  ReadinessService -> SpeciesProfileRules: Fall back to static seasonal timing when observation evidence is weak or unavailable
   ReadinessService --> ReadinessRoute: Low-confidence or unavailable result with missing-data reasons
   ReadinessRoute --> AppUi: Result payload with limitations
   AppUi --> User: Show low-confidence or unavailable state
@@ -44,7 +58,9 @@ end
 
 Admin -> AppUi: Open restricted species management
 AppUi -> SpeciesManagementRoute: Search taxon and save supported species
-SpeciesManagementRoute -> SpeciesCatalog: Create or update supported species entry
+SpeciesManagementRoute -> TaxonSearchApi: Search and confirm external taxon identity
+TaxonSearchApi --> SpeciesManagementRoute: Matching taxa
+SpeciesManagementRoute -> SpeciesCatalog: Create or update supported species entry with stored taxon ID
 SpeciesManagementRoute -> SpeciesProfileRules: Create or update species-specific rules
 SpeciesManagementRoute --> AppUi: Confirm catalog update
 
@@ -53,6 +69,25 @@ Detailed expert submission and approval workflow
 is intentionally deferred.
 This diagram only fixes the stable boundary where
 species-specific rules are stored and adjusted.
+end note
+
+note right of SpeciesCatalog
+Supported species store the external taxon ID
+needed for runtime observation lookup.
+Runtime readiness must not call taxon search.
+end note
+
+note right of SeasonalEvidenceCache
+Cache stores processed seasonal evidence,
+not raw observation payloads.
+Long-run target: persistent cache.
+Initial shortcut: in-memory cache if needed.
+end note
+
+note right of ReadinessService
+If seasonal evidence is sparse, missing, or unavailable
+without reusable stale cache, the service falls back
+to the static species calendar and lowers confidence.
 end note
 
 @enduml
