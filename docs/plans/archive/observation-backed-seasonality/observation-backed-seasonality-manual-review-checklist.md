@@ -17,10 +17,10 @@ Use this before commit after implementation and an independent review.
 
 ## Code quality
 
-- [ ] The code is understandable without relying on hidden agent context.
-- [ ] New abstractions are justified and not premature.
-- [ ] Dependencies added or changed are documented in the decision log.
-- [ ] Naming, file placement, and structure fit the repo.
+- [x] The code is understandable without relying on hidden agent context.
+- [x] New abstractions are justified and not premature.
+- [x] Dependencies added or changed are documented in the decision log.
+- [x] Naming, file placement, and structure fit the repo.
 
 ## Behavior and testing
 
@@ -36,4 +36,4 @@ Use this before commit after implementation and an independent review.
 - [x] Review findings were addressed or explicitly accepted as follow-up items.
 - [x] Any re-review after fixes was targeted to changed or previously risky areas.
 - [x] I understand the key technical choices well enough to explain them.
-- [ ] The change is ready for a manual commit.
+- [x] The change is ready for a manual commit.
