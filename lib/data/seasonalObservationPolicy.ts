@@ -46,8 +46,6 @@ export interface SeasonalObservationPolicy {
 	};
 	degradedBehavior: {
 		limitationCodes: string[];
-		lowConfidenceRadiusThresholdMeters: number;
-		lowConfidenceLookbackThresholdYears: number;
 	};
 }
 
@@ -103,8 +101,7 @@ export const SEASONAL_OBSERVATION_POLICY = {
 			'seasonal-evidence-sparse',
 			'seasonal-evidence-expanded-radius',
 			'seasonal-evidence-expanded-lookback',
+			'seasonal-evidence-stale-cache',
 		],
-		lowConfidenceRadiusThresholdMeters: 10000,
-		lowConfidenceLookbackThresholdYears: 10,
 	},
 } satisfies SeasonalObservationPolicy;

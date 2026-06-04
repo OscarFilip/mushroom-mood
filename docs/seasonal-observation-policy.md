@@ -215,24 +215,16 @@ Suggested limitation codes for the first slice:
 - `seasonal-evidence-expanded-radius`
 - `seasonal-evidence-expanded-lookback`
 - `seasonal-evidence-stale-cache`
-- `seasonal-fallback-static-calendar`
 
 ## Confidence impact
 
-Confidence should decrease when:
+Current implementation applies a simple confidence policy:
 
-- the query had to widen beyond `10 km`
-- the query had to widen beyond `10 years`
-- the filtered evidence depends heavily on non-default datasets
-- the seasonal score is supported by very few weighted observations or few distinct years
-- fallback to the static species calendar was required
-- stale cache had to be reused because live refresh failed
+- lower confidence by a fixed penalty when observation-backed seasonality cannot be used and the service falls back to the static species calendar
+- keep the current confidence model otherwise, even when the seasonal repository had to widen radius or lookback
+- surface stale cache reuse through limitations, but do not apply an additional stale-cache confidence penalty yet
 
-Confidence should increase when:
-
-- the result is supported within the smaller radii
-- multiple recent years contribute to the same seasonal pattern
-- the score is supported mostly by verified or otherwise higher-weight records
+Finer-grained confidence tuning based on widened radius, widened lookback, dataset mix, or evidence composition remains a future refinement rather than part of the first stable implementation.
 
 ## Known limitations
 

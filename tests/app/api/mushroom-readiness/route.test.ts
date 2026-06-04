@@ -20,7 +20,14 @@ const VALID_RESULT = {
     summary: 'Out of season.',
     weatherSupport: 'partial',
     seasonalSupport: 'missing',
-    speciesTimingSupport: 'missing',
+    seasonalEvidence: {
+      quality: 'missing',
+      radiusUsedMeters: null,
+      lookbackYearsUsed: null,
+      rawObservationCount: null,
+      weightedObservationCount: null,
+      distinctObservationYears: null,
+    },
   },
   limitations: [],
 };

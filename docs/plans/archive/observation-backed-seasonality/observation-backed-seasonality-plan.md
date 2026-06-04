@@ -130,6 +130,7 @@ explanation: {
 		quality: 'sufficient' | 'sparse' | 'missing';
 		radiusUsedMeters: number | null;
 		lookbackYearsUsed: number | null;
+		rawObservationCount: number | null;
 		weightedObservationCount: number | null;
 		distinctObservationYears: number | null;
 	};

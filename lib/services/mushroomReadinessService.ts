@@ -5,6 +5,13 @@ import {
   SpeciesId,
 } from '../data/mushroomSpecies';
 import { logDebug, logInfo, summarizeMeasurements } from '../utils/observability';
+import {
+  SeasonalObservationRepository,
+  SeasonalObservationParams,
+  SeasonalObservationResult,
+  defaultSeasonalObservationRepository,
+} from '../repositories/seasonalObservationRepository';
+import { SEASONAL_OBSERVATION_POLICY } from '../data/seasonalObservationPolicy';
 
 export type ReadinessLabel =
   | 'very-likely-worth-checking'
@@ -16,6 +23,15 @@ export type ReadinessLabel =
 
 export type SeasonalState = 'in-season' | 'shoulder-season' | 'out-of-season' | 'unknown';
 export type SupportLevel = 'supported' | 'partial' | 'missing';
+
+export interface SeasonalEvidenceSummary {
+  quality: 'sufficient' | 'sparse' | 'missing';
+  radiusUsedMeters: number | null;
+  lookbackYearsUsed: number | null;
+  rawObservationCount: number | null;
+  weightedObservationCount: number | null;
+  distinctObservationYears: number | null;
+}
 
 export interface ReadinessResult {
   spot: { latitude: number; longitude: number };
@@ -30,18 +46,28 @@ export interface ReadinessResult {
     summary: string;
     weatherSupport: SupportLevel;
     seasonalSupport: SupportLevel;
-    speciesTimingSupport: SupportLevel;
+    seasonalEvidence: SeasonalEvidenceSummary;
   };
   limitations: string[];
+}
+
+export interface ReadinessServiceDeps {
+  seasonalRepo?: {
+    getSeasonalEvidence(params: SeasonalObservationParams): Promise<SeasonalObservationResult>;
+  };
+  now?: Date;
 }
 
 export async function getMushroomReadiness(
   latitude: number,
   longitude: number,
   speciesId: SpeciesId,
+  deps?: ReadinessServiceDeps,
 ): Promise<ReadinessResult> {
   const species = CURATED_SPECIES[speciesId];
-  const now = new Date();
+  const now = deps?.now ?? new Date();
+  const seasonalRepo =
+    deps?.seasonalRepo ?? defaultSeasonalObservationRepository;
 
   logDebug('[mushroom-readiness] request', {
     latitude,
@@ -59,14 +85,12 @@ export async function getMushroomReadiness(
       optimalRain7DayMm: species.optimalRain7DayMm,
       minRain14DayMm: species.minRain14DayMm,
     },
-    seasonalEvidence: {
-      source: 'static-species-calendar',
-      observationsFetched: false,
-      note: 'No SLU or ArtDatabanken observation fetch is implemented in the current readiness service.',
-    },
   });
 
-  const weatherData = await getHistoricalWeatherData(latitude, longitude);
+  const [weatherData, seasonalObsResult] = await Promise.all([
+    getHistoricalWeatherData(latitude, longitude),
+    seasonalRepo.getSeasonalEvidence({ latitude, longitude, taxonId: species.taxonId, now }),
+  ]);
 
   const rainMeasurements = weatherData.rainStation?.rainFallMeasurements ?? [];
   const tempMeasurements = weatherData.temperatureStation?.temperatureMeasurements ?? [];
@@ -98,6 +122,13 @@ export async function getMushroomReadiness(
           })),
         }
       : null,
+    seasonalObservations: {
+      evidenceQuality: seasonalObsResult.evidenceQuality,
+      radiusUsedMeters: seasonalObsResult.radiusUsedMeters,
+      lookbackYearsUsed: seasonalObsResult.lookbackYearsUsed,
+      weightedObservationCount: seasonalObsResult.weightedObservationCount,
+      limitations: seasonalObsResult.limitations,
+    },
   });
 
   if (!hasRainData) {
@@ -108,27 +139,56 @@ export async function getMushroomReadiness(
       outcome: 'unknown',
       reason: 'weather-data-unavailable',
     });
-    return buildUnknownResult(latitude, longitude, species, ['weather-data-unavailable']);
+    return buildUnknownResult(latitude, longitude, species, seasonalObsResult, [
+      'weather-data-unavailable',
+    ]);
   }
 
   const rainWindows = computeRainWindows(rainMeasurements, now);
   const avgTemp = hasTempData ? computeRecentAvgTemp(tempMeasurements, now) : null;
 
-  const seasonalState = getSeasonalState(species, now);
+  // Resolve seasonal state and support from observation evidence when sufficient,
+  // or fall back to the static species calendar when evidence is sparse or missing.
+  let seasonalState: SeasonalState;
+  let seasonalSupport: SupportLevel;
+  let observationBacked = false;
+
+  if (
+    seasonalObsResult.evidenceQuality === 'sufficient' &&
+    seasonalObsResult.seasonalityScore !== null
+  ) {
+    seasonalState = scoreToSeasonalState(
+      seasonalObsResult.seasonalityScore,
+      SEASONAL_OBSERVATION_POLICY.scoring.seasonalStateThresholds,
+    );
+    seasonalSupport = assessSeasonalSupport(seasonalState);
+    observationBacked = true;
+  } else {
+    seasonalState = getSeasonalStateFromCalendar(species, now);
+    seasonalSupport = assessSeasonalSupport(seasonalState);
+  }
+
   const tempScore = assessTempScore(species, avgTemp);
   const weatherSupport = assessWeatherSupport(species, rainWindows, avgTemp);
-  const seasonalSupport = assessSeasonalSupport(seasonalState);
 
   const probability = computeProbability(seasonalState, weatherSupport, tempScore);
   const readinessLabel = computeReadinessLabel(probability, seasonalState);
-  const confidencePercent = computeConfidence(
+
+  let confidencePercent = computeConfidence(
     hasRainData,
     hasTempData,
     rainWindows.dayCount,
     seasonalState,
   );
 
-  const limitations: string[] = [];
+  // Lower confidence whenever seasonal fallback is used so missing evidence does
+  // not read as equally certain as observation-backed results.
+  if (!observationBacked) {
+    const fallbackPenalty = seasonalObsResult.evidenceQuality === 'missing' ? 20 : 10;
+    confidencePercent = Math.max(5, confidencePercent - fallbackPenalty);
+  }
+
+  const limitations: string[] = [...seasonalObsResult.limitations];
   if (!hasTempData) limitations.push('temperature-data-unavailable');
   if (rainWindows.dayCount < 14) limitations.push('limited-rainfall-history');
 
@@ -137,8 +197,9 @@ export async function getMushroomReadiness(
     latitude,
     longitude,
     seasonalEvidence: {
-      source: 'static-species-calendar',
-      observationsFetched: false,
+      source: observationBacked ? 'observation-backed' : 'static-species-calendar',
+      evidenceQuality: seasonalObsResult.evidenceQuality,
+      seasonalityScore: seasonalObsResult.seasonalityScore,
     },
     derivedInputs: {
       rainWindows,
@@ -175,10 +236,30 @@ export async function getMushroomReadiness(
       summary: buildSummary(readinessLabel, seasonalState, weatherSupport, species),
       weatherSupport,
       seasonalSupport,
-      speciesTimingSupport: seasonalSupport,
+      seasonalEvidence: buildSeasonalEvidenceSummary(seasonalObsResult),
     },
     limitations,
   };
+}
+
+function buildSeasonalEvidenceSummary(result: SeasonalObservationResult): SeasonalEvidenceSummary {
+  return {
+    quality: result.evidenceQuality,
+    radiusUsedMeters: result.radiusUsedMeters,
+    lookbackYearsUsed: result.lookbackYearsUsed,
+    rawObservationCount: result.rawObservationCount,
+    weightedObservationCount: result.weightedObservationCount,
+    distinctObservationYears: result.distinctObservationYears,
+  };
+}
+
+function scoreToSeasonalState(
+  score: number,
+  thresholds: { inSeasonMin: number; shoulderSeasonMin: number },
+): SeasonalState {
+  if (score >= thresholds.inSeasonMin) return 'in-season';
+  if (score >= thresholds.shoulderSeasonMin) return 'shoulder-season';
+  return 'out-of-season';
 }
 
 function computeRainWindows(
@@ -219,7 +300,7 @@ function computeRecentAvgTemp(
   return recent.reduce((sum, m) => sum + m.temperature, 0) / recent.length;
 }
 
-function getSeasonalState(species: MushroomSpeciesProfile, date: Date): SeasonalState {
+function getSeasonalStateFromCalendar(species: MushroomSpeciesProfile, date: Date): SeasonalState {
   const month = date.getMonth() + 1;
   if (species.peakMonths.includes(month)) return 'in-season';
   if (species.seasonMonths.includes(month)) return 'shoulder-season';
@@ -336,7 +417,7 @@ function buildSummary(
     return `${name} is in season but weather conditions only partially support fruiting. Conditions are mixed.`;
   }
   if (seasonalState === 'in-season' && weatherSupport === 'missing') {
-    return `${name} is in season, but recent rainfall has been insufficient to trigger fruiting.`;
+    return `${name} is in season, but current weather conditions do not support fruiting right now.`;
   }
   if (seasonalState === 'shoulder-season' && weatherSupport === 'supported') {
     return `${name} is in shoulder season and weather is favorable. Fruiting is possible but not guaranteed.`;
@@ -351,6 +432,7 @@ function buildUnknownResult(
   latitude: number,
   longitude: number,
   species: MushroomSpeciesProfile,
+  seasonalObsResult: SeasonalObservationResult,
   limitations: string[],
 ): ReadinessResult {
   return {
@@ -370,7 +452,7 @@ function buildUnknownResult(
       summary: 'Insufficient data to assess readiness for this spot.',
       weatherSupport: 'missing',
       seasonalSupport: 'missing',
-      speciesTimingSupport: 'missing',
+      seasonalEvidence: buildSeasonalEvidenceSummary(seasonalObsResult),
     },
     limitations,
   };

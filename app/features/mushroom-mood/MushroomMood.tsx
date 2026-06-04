@@ -32,10 +32,26 @@ const SUPPORT_LABELS: Record<SupportLevel, { text: string; color: string }> = {
   'missing': { text: 'Insufficient', color: 'text-red-600' },
 };
 
+const EVIDENCE_QUALITY_LABELS = {
+  sufficient: { text: 'Sufficient', color: 'text-emerald-600' },
+  sparse: { text: 'Sparse', color: 'text-amber-600' },
+  missing: { text: 'Missing', color: 'text-red-600' },
+} as const;
+
 function confidenceLabel(pct: number): string {
   if (pct >= 70) return 'High';
   if (pct >= 40) return 'Moderate';
   return 'Low';
+}
+
+function formatMeters(value: number | null): string {
+  if (value === null) return '—';
+  return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)} km`;
+}
+
+function formatCount(value: number | null): string {
+  if (value === null) return '—';
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 export default function MushroomMood(): JSX.Element {
@@ -80,6 +96,7 @@ export default function MushroomMood(): JSX.Element {
 
   const labelStyle = result ? LABEL_STYLES[result.result.readinessLabel] : null;
   const isInsufficient = result?.result.readinessLabel === 'unknown';
+  const seasonalEvidence = result?.explanation.seasonalEvidence;
 
   return (
     <div className="max-w-2xl mx-auto font-sans">
@@ -178,10 +195,46 @@ export default function MushroomMood(): JSX.Element {
           </div>
 
           {isInsufficient ? (
-            <div className="p-4 bg-stone-100 rounded border border-stone-200 text-stone-600 text-sm">
-              <p className="font-semibold mb-1">Insufficient data</p>
-              <p>{result.explanation.summary}</p>
-            </div>
+            <>
+              <div className="p-4 bg-stone-100 rounded border border-stone-200 text-stone-600 text-sm mb-4">
+                <p className="font-semibold mb-1">Insufficient data</p>
+                <p>{result.explanation.summary}</p>
+              </div>
+
+              <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-4">
+                <h3 className="text-sm font-semibold text-stone-700 mb-3">Seasonal evidence</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Quality</p>
+                    <p className={`font-medium ${EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].color}`}>
+                      {EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].text}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Radius used</p>
+                    <p className="font-medium text-stone-700">{formatMeters(seasonalEvidence.radiusUsedMeters)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Lookback</p>
+                    <p className="font-medium text-stone-700">
+                      {seasonalEvidence.lookbackYearsUsed === null ? '—' : `${seasonalEvidence.lookbackYearsUsed} years`}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Raw observations</p>
+                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.rawObservationCount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Weighted observation score</p>
+                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.weightedObservationCount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Distinct years</p>
+                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.distinctObservationYears)}</p>
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               {/* Summary */}
@@ -226,7 +279,6 @@ export default function MushroomMood(): JSX.Element {
                     [
                       ['Weather', result.explanation.weatherSupport],
                       ['Seasonal', result.explanation.seasonalSupport],
-                      ['Species timing', result.explanation.speciesTimingSupport],
                     ] as [string, SupportLevel][]
                   ).map(([label, support]) => (
                     <div key={label} className="flex justify-between">
@@ -236,6 +288,40 @@ export default function MushroomMood(): JSX.Element {
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-4">
+                <h3 className="text-sm font-semibold text-stone-700 mb-3">Seasonal evidence</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Quality</p>
+                    <p className={`font-medium ${EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].color}`}>
+                      {EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].text}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Radius used</p>
+                    <p className="font-medium text-stone-700">{formatMeters(seasonalEvidence.radiusUsedMeters)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Lookback</p>
+                    <p className="font-medium text-stone-700">
+                      {seasonalEvidence.lookbackYearsUsed === null ? '—' : `${seasonalEvidence.lookbackYearsUsed} years`}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Raw observations</p>
+                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.rawObservationCount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Weighted observation score</p>
+                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.weightedObservationCount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Distinct years</p>
+                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.distinctObservationYears)}</p>
+                  </div>
                 </div>
               </div>
 

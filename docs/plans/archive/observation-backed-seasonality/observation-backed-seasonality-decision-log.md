@@ -222,7 +222,7 @@ The readiness service needs a stable contract for degraded behavior. Raw observa
 
 ## Decision
 
-The seasonal observation repository contract for this slice should return `seasonalityScore`, `evidenceQuality`, `radiusUsedMeters`, `lookbackYearsUsed`, `weightedObservationCount`, `distinctObservationYears`, and `limitations` to the readiness service.
+The seasonal observation repository contract for this slice should return `seasonalityScore`, `evidenceQuality`, `radiusUsedMeters`, `lookbackYearsUsed`, `rawObservationCount`, `weightedObservationCount`, `distinctObservationYears`, and `limitations` to the readiness service.
 
 ## Why
 
@@ -260,7 +260,7 @@ That grouped shape keeps the response easier to read and makes it clear that the
 
 ## Alternatives considered
 
-- Flatten `seasonalEvidenceQuality`, `radiusUsedMeters`, `lookbackYearsUsed`, `weightedObservationCount`, and `distinctObservationYears` directly under `explanation`
+- Flatten `seasonalEvidenceQuality`, `radiusUsedMeters`, `lookbackYearsUsed`, `rawObservationCount`, `weightedObservationCount`, and `distinctObservationYears` directly under `explanation`
 - Create a separate top-level `seasonalEvidence` object outside `explanation`
 
 ## Tradeoffs
