@@ -23,3 +23,9 @@ When work moves between planning, implementation, self-check, independent review
 - `<feature-name>-execution-log.md`
 - `<feature-name>-review.md`
 - `<feature-name>-manual-review-checklist.md` when needed
+## Relationship to durable docs
+
+Files in this folder are temporary active-slice handoff files. When a slice is complete, archive the slice-specific plan, decision log, execution log, review file, and checklist according to the project archive process.
+
+Durable product and operational docs outside `docs/plans/active/`, such as `docs/deployment.md`, are not archived with the slice. Keep those files as current-state documentation and remove stale active-slice references from them before handoff.
+
