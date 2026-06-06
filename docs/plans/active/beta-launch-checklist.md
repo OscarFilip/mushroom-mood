@@ -54,14 +54,14 @@ The goal is to create a private environment where the rest of the beta work can 
 | Status | Task | Done means |
 | --- | --- | --- |
 | `[ ]` | Choose the beta deployment target | You know whether the first beta will run in staging, production, or a separate private beta environment. |
-| `[ ]` | Deploy the current app to a private beta-like environment | The app deploys successfully, but is not publicly usable by arbitrary users. |
-| `[ ]` | Configure required environment variables | Required config is documented and present in the deployed environment. |
+| `[ ]` | Deploy the current app to a private beta-like environment | The app deploys successfully, but `dev` and any pre-auth `main`/beta-baseline deployment are not publicly usable by arbitrary users. |
+| `[ ]` | Configure required environment variables | Required config is discovered from the repo, documented without values, and present in the correct deployed environment scopes. |
 | `[ ]` | Configure external API credentials | Weather and observation/seasonal evidence credentials work in the deployed environment or fail safely. |
 | `[ ]` | Verify startup and runtime behavior | Build-time, startup, and runtime errors are visible and diagnosable. |
 | `[ ]` | Verify production build | `npm run build` passes locally and in the deployment path. |
 | `[ ]` | Verify test command | `npm test` passes before using the deployment as the beta baseline. |
 | `[ ]` | Rotate any exposed or uncertain credentials | Any secrets that may have appeared in local archives, logs, screenshots, or shared files are replaced before beta. |
-| `[ ]` | Document rollback or disable-beta procedure | You can redeploy the previous stable version, disable beta access, or take the beta environment offline if needed. |
+| `[ ]` | Document rollback or disable-beta procedure | `docs/deployment.md` remains the durable deployment reference and explains how to redeploy the previous stable version, disable beta access, or take the beta environment offline. |
 | `[ ]` | Confirm deployment is a foundation, not a launch | The team agrees that deployment alone does not permit inviting testers. |
 
 ### 2. Access control and beta-only entry

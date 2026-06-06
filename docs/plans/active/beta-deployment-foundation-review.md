@@ -40,17 +40,21 @@ Review must confirm:
 - No secret-like values are present in docs, plans, logs, examples, screenshots, or generated files.
 - `dev` deployment is protected and owner-only.
 - `main` beta environment is not treated as tester-ready before app-level invite-only auth exists.
+- `main`/beta-baseline is protected, disabled, unaliased, or otherwise not publicly usable before app-level invite-only auth exists.
+- Exact env-var discovery was performed from the repo and recorded without values.
 - Missing required external API credentials do not produce normal-looking readiness results.
 - `npm test` and `npm run build` have been run and recorded.
 - Rollback and disable-beta steps are documented.
+- `docs/deployment.md` is durable current-state documentation, not a temporary active-slice file, and has no stale active-slice references.
 
 ### Non-blocking follow-up
 
 Potential follow-ups:
 
-- Add or improve health/config endpoint.
+- Add or improve health/config endpoint only if existing readiness routes/provider logs are not enough for validation.
 - Add CI workflow checks in GitHub Actions.
 - Add architecture/UML update if config validation becomes a meaningful runtime boundary.
+- Archive active slice files after completion, while keeping `docs/deployment.md` as the maintained deployment reference.
 
 ## Test coverage gaps
 
