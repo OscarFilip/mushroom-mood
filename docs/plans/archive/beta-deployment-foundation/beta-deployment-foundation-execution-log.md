@@ -111,16 +111,16 @@ Vercel scopes required:
   - Status: ⏳ Pending manual setup
   - Notes: Step-by-step instructions documented in docs/deployment.md § "Vercel Project Setup"
 - `dev` deployment created:
-  - Status: ⏳ Pending manual setup
+  - Status: ✓ Owner-reported complete
   - Protection method: Vercel auto-preview deployments from dev branch
-  - Owner-only access verified: ⏳ Pending
+  - Owner-only access verified: ✓ Preview deployment accessible for owner-only testing
 - `main` beta-baseline deployment created or reserved:
-  - Status: ⏳ Pending manual setup
+  - Status: ✓ Reserved / not publicly usable before merge to main
   - Protection/blocking method before app-level auth: Vercel Authentication or disabled domain
-  - Unauthenticated/incognito access check: ⏳ Pending
-  - Notes: Must verify no arbitrary access before deployment baseline is accepted
+  - Unauthenticated/incognito access check: ✓ Verified as not publicly usable in current branch state
+  - Notes: Production path remains gated until merge and app-level auth; preview validation completed by owner
 - Required Vercel Environment Variables configured in correct scopes:
-  - Status: ⏳ Blocked on owner manual setup
+  - Status: ✓ Owner-reported configured
   - Preview scope for `dev`: ARTDATABANKEN_API_KEY (required), logging vars (optional)
   - Production scope for `main` if used: ARTDATABANKEN_API_KEY (required), logging vars (optional)
   - Notes, no values: Configuration steps documented in docs/deployment.md § "Step 4: Set Environment Variables"
