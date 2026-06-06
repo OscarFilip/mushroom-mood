@@ -59,6 +59,100 @@ If Vercel becomes a blocker or the provider changes, update this document and re
 | Dev-live / preview | `dev` | Owner only | Live deployed testing before promotion. |
 | Beta baseline | `main` | Owner only before auth; beta testers later | Tester-facing environment only after app-level invite-only auth exists. Before then, it must be protected, disabled, unaliased, or otherwise inaccessible to arbitrary visitors. |
 
+## Vercel Project Setup (Initial Configuration)
+
+### Prerequisites
+
+- GitHub repository owner/admin access
+- Vercel account (free tier is sufficient for initial beta)
+- Repository already has `main` (stable) and `dev` (working) branches
+
+### Step 1: Create Vercel Project
+
+1. Go to https://vercel.com/new
+2. Select "Next.js" or "Import Project"
+3. Connect to the GitHub repository (select `mushroom-mood` repo)
+4. Vercel will auto-detect it as a Next.js project
+5. Set project name (e.g., `mushroom-mood` or `mushroom-mood-beta`)
+6. In "Framework Preset", ensure "Next.js" is selected
+7. In "Root Directory", leave as `.` (default)
+8. Click "Deploy" to create the initial deployment from `main`
+
+### Step 2: Configure GitHub Integration
+
+1. In Vercel project settings → Git Integrations
+2. Ensure GitHub is connected and the correct repo is selected
+3. Auto-deployment should be enabled by default
+
+### Step 3: Configure Deployment Branches
+
+In Vercel project settings → Deployments:
+
+1. **Production (main branch)**
+   - Automatically deploy from `main`
+   - Production domain: (auto-assigned by Vercel)
+   - Mark as "Production" environment
+   - Protection: See "Branch Protection" below
+
+2. **Preview (dev branch and PRs)**
+   - Automatically deploy from `dev` branch
+   - Mark as "Preview" environment
+   - Automatically preview feature branches
+
+### Step 4: Set Environment Variables in Vercel
+
+Go to Settings → Environment Variables and add the following (no values in this doc):
+
+**For Preview (dev deployments):**
+- NEXT_PUBLIC_APP_ENV = dev
+- ARTDATABANKEN_API_KEY = [rotated value]
+- MUSHROOM_MOOD_LOG_LEVEL = debug (optional)
+- ENABLE_VERBOSE_API_LOGGING = true (optional)
+
+**For Production (main/beta-baseline):**
+- NEXT_PUBLIC_APP_ENV = beta
+- ARTDATABANKEN_API_KEY = [rotated value]
+- MUSHROOM_MOOD_LOG_LEVEL = (optional)
+- ENABLE_VERBOSE_API_LOGGING = (optional)
+
+Ensure variable scopes match:
+- Preview scope for `dev` deployments
+- Production scope for `main` deployments
+
+### Step 5: Protect main/Beta-Baseline Before App-Level Auth
+
+Before app-level invite-only auth exists, the `main`/beta-baseline deployment must not be publicly accessible.
+
+Choose one or more of these controls in Vercel Settings → Deployment Protection:
+
+1. **Vercel Authentication** (recommended for initial beta)
+   - Enable "Vercel Authentication" on the Production deployment
+   - Only Vercel account members can access
+   - Settings → Deployment Protection → Vercel Authentication
+
+2. **Disable Production Domain**
+   - Settings → Domains
+   - Remove or disable the production domain if not needed yet
+   - Deployment still works, just no public URL
+
+3. **Custom Domain with Auth** (if using a custom domain later)
+   - Assign custom domain to Preview/dev deployment only
+   - Keep Production deployment on Vercel's auto-assigned internal URL with Vercel Auth enabled
+
+4. **Preview Deployments Only**
+   - Keep Production deployment but do not assign a public-facing domain
+   - Access only via Preview/dev deployment for testing
+
+### Step 6: Verify Initial Deployment
+
+After the first deployment completes:
+
+1. Check Vercel project dashboard for successful build
+2. Test the Preview URL for `dev` branch
+3. Verify `main`/Production is not publicly accessible (or behind auth)
+4. Confirm build logs are visible
+5. Check that environment variables are correctly injected (test via app logs or endpoint responses)
+
 ## Important rule
 
 The beta baseline environment must not be considered tester-ready until app-level invite-only access exists.
@@ -159,6 +253,41 @@ GitHub Secrets may be used later for CI/CD tokens, but they are not the primary 
 ## Required environment variables
 
 Keep the exact list in `.env.example`.
+
+Discovered environment variable usage (verified 2026-06-06):
+
+```text
+Env-var discovery method:
+  - Full repo search for process.env, NEXT_PUBLIC_, and framework config
+  - Search included: lib/, app/api/, tests/
+  - Code review of: repositories, services, utils
+
+Required server-only variables:
+  - ARTDATABANKEN_API_KEY
+    * Used by: SeasonalObservationRepository
+    * Impact if missing: Seasonal observations return 'missing' quality, confidence reduced by 20%,
+      readiness falls back to static species calendar, prevents misleading results
+    * Config failure test: lib/repositories/seasonalObservationRepository.test.ts
+                          'returns missing evidence without making any network call'
+
+Public variables (NEXT_PUBLIC_):
+  - NEXT_PUBLIC_APP_ENV
+    * Used for: Environment identification (dev, beta, production, etc.)
+    * Safe for browser: Yes
+
+Logging variables (optional, no secrets):
+  - MUSHROOM_MOOD_LOG_LEVEL
+    * Values: 'debug', 'verbose', 'true', '1', or 'on' to enable
+  - ENABLE_VERBOSE_API_LOGGING
+    * Values: 'debug', 'verbose', 'true', '1', or 'on' to enable
+
+Variables with hardcoded defaults (optional):
+  - SMHI_API_BASE_URL (defaults to https://opendata-download-metobs.smhi.se/api)
+  - SMHI_API_KEY (SMHI service is public; key not required)
+  - ARTDATABANKEN_API_BASE_URL (has default value)
+  - INATURALIST_API_BASE_URL (has default value)
+  - INATURALIST_API_KEY (future expansion, not actively used)
+```
 
 Before `.env.example` is changed, confirm which variables are actually required by the current code. Search the full repo for:
 

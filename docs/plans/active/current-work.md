@@ -18,7 +18,7 @@ Allowed values:
 
 ## Current owner
 
-`implementation-agent`
+`human` (requires manual Vercel account setup)
 
 Examples:
 
@@ -51,17 +51,16 @@ Examples:
 
 ## Expected next action
 
-Implement the private Vercel-based deployment foundation according to the finalized planning decisions.
+Implementation is code-complete with self-review passed. The next actions are manual Vercel setup and owner validation:
 
-The next implementation pass should:
+1. Read `docs/deployment.md` § "Vercel Project Setup (Initial Configuration)"
+2. Follow the 6-step setup process in your Vercel account (web browser)
+3. Configure environment variables in Vercel for both Preview (dev) and Production (main) scopes
+4. Verify deployments work and `main`/beta-baseline is not publicly accessible
+5. Tag the baseline commit and record deployment URLs
+6. Return here and advance to review stage
 
-1. Configure the Vercel project and connect it to GitHub.
-2. Map `dev` to a protected owner-only dev-live/preview environment.
-3. Map `main` to the future beta baseline environment and ensure it is not publicly usable before app-level auth exists.
-4. Discover exact env-var usage from the repo, then add or update `.env.example` with required variable names only.
-5. Add or update `docs/deployment.md` as durable current-state deployment documentation with environment, secrets, validation, rollback, and disable-beta procedures.
-6. Verify that missing critical external API credentials do not produce normal-looking readiness results.
-7. Run `npm test` and `npm run build` before accepting the deployment baseline.
+All code-level implementation, testing, and documentation are complete. No code changes needed by owner.
 
 ## Exact handoff question
 
