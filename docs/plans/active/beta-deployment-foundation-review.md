@@ -11,10 +11,10 @@ Independent review of the implementation commit against the plan, current-work s
 
 ## Previous findings status
 
-- Resolved: `n/a`
+- Resolved: Finding 1 — `.env.example` and deployment docs narrowed to exact vars read by the code (`ARTDATABANKEN_API_KEY`, `MUSHROOM_MOOD_LOG_LEVEL`, `ENABLE_VERBOSE_API_LOGGING`). All speculative vars removed. Affected files corrected: `.env.example`, `docs/deployment.md`, `docs/plans/active/beta-deployment-foundation-execution-log.md`.
 - Partially resolved: N/A
-- Accepted as follow-up: N/A
-- Still open: N/A
+- Accepted as follow-up: Finding 2 — deployment validation is a documented owner-only blocker. Cannot be resolved by the agent. Owner must perform the manual Vercel setup and record results in the execution log before the targeted re-review can complete.
+- Still open: Finding 2 (owner action required)
 
 ## Findings
 

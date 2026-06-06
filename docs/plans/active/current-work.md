@@ -8,7 +8,7 @@ Update this file before you ask an agent to continue work from repository contex
 
 ## Stage
 
-`review`
+`implementation`
 
 Allowed values:
 
@@ -29,15 +29,9 @@ Examples:
 
 ## Current review round
 
-`independent-review-1`
+`targeted-rereview-1`
 
-Examples:
-
-- `not-started`
-- `self-check-1`
-- `independent-review-1`
-- `targeted-rereview-1`
-- `complete`
+(Independent review finding 1 resolved. Finding 2 — deployment validation — is a documented owner-only blocker. Targeted re-review to confirm once Vercel setup is complete.)
 
 ## Primary files
 
@@ -51,12 +45,18 @@ Examples:
 
 ## Expected next action
 
-Independent review found blocking documentation/slice-state issues.
+Finding 1 (env-var scope) is resolved. Finding 2 (deployment validation) requires owner action.
 
-1. Narrow `.env.example` and deployment docs to the exact env vars the app actually reads.
-2. Do not accept the slice as review-complete until the Vercel/GitHub mapping, deployment protection, and env-scope setup are actually performed or a blocker is documented.
-3. Update the execution log with real deployment-validation results once the manual setup is done.
-4. Request a targeted re-review after those findings are addressed.
+**Owner must perform the manual Vercel setup to unblock this slice:**
+
+1. Follow the 6-step guide in `docs/deployment.md` § "Vercel Project Setup (Initial Configuration)"
+2. Set `ARTDATABANKEN_API_KEY` (+ optional logging vars) in Vercel — Preview scope for `dev`, Production scope for `main`
+3. Verify `dev` preview loads and is not accessible to arbitrary visitors
+4. Verify `main`/Production is not publicly accessible before app-level auth (Vercel Auth recommended)
+5. Record deployment URLs and protection method in the execution log
+6. Tag the accepted baseline commit
+
+Once the above is done, return here, set stage to `review`, and request targeted re-review.
 
 ## Exact handoff question
 

@@ -103,21 +103,25 @@ In Vercel project settings → Deployments:
 
 Go to Settings → Environment Variables and add the following (no values in this doc):
 
-**For Preview (dev deployments):**
-- NEXT_PUBLIC_APP_ENV = dev
+**For Preview (dev deployments) — required:**
 - ARTDATABANKEN_API_KEY = [rotated value]
-- MUSHROOM_MOOD_LOG_LEVEL = debug (optional)
-- ENABLE_VERBOSE_API_LOGGING = true (optional)
 
-**For Production (main/beta-baseline):**
-- NEXT_PUBLIC_APP_ENV = beta
+**For Preview (dev deployments) — optional:**
+- MUSHROOM_MOOD_LOG_LEVEL = debug
+- ENABLE_VERBOSE_API_LOGGING = true
+
+**For Production (main/beta-baseline) — required:**
 - ARTDATABANKEN_API_KEY = [rotated value]
-- MUSHROOM_MOOD_LOG_LEVEL = (optional)
-- ENABLE_VERBOSE_API_LOGGING = (optional)
+
+**For Production (main/beta-baseline) — optional:**
+- MUSHROOM_MOOD_LOG_LEVEL =
+- ENABLE_VERBOSE_API_LOGGING =
 
 Ensure variable scopes match:
 - Preview scope for `dev` deployments
 - Production scope for `main` deployments
+
+SMHI weather data is accessed via a hardcoded public URL and requires no credentials. ArtDatabanken and iNaturalist base URLs are also hardcoded in the application policy; do not add them as environment variables unless the code is updated to read them.
 
 ### Step 5: Protect main/Beta-Baseline Before App-Level Auth
 
@@ -238,11 +242,7 @@ Do not make committed `.env` files point to a secret vault for the first beta. T
 
 Variables prefixed with `NEXT_PUBLIC_` are browser-visible and must never contain secrets.
 
-Only use `NEXT_PUBLIC_` for safe public values, such as:
-
-```env
-NEXT_PUBLIC_APP_ENV=
-```
+Only use `NEXT_PUBLIC_` for safe public values. No `NEXT_PUBLIC_` variables are currently read by the app. If one is added in the future, confirm it is safe before committing.
 
 ### External secret providers
 
@@ -262,31 +262,27 @@ Env-var discovery method:
   - Search included: lib/, app/api/, tests/
   - Code review of: repositories, services, utils
 
-Required server-only variables:
+Required server-only variables (read via process.env):
   - ARTDATABANKEN_API_KEY
-    * Used by: SeasonalObservationRepository
+    * Used by: lib/repositories/seasonalObservationRepository.ts
     * Impact if missing: Seasonal observations return 'missing' quality, confidence reduced by 20%,
       readiness falls back to static species calendar, prevents misleading results
     * Config failure test: lib/repositories/seasonalObservationRepository.test.ts
                           'returns missing evidence without making any network call'
 
-Public variables (NEXT_PUBLIC_):
-  - NEXT_PUBLIC_APP_ENV
-    * Used for: Environment identification (dev, beta, production, etc.)
-    * Safe for browser: Yes
-
-Logging variables (optional, no secrets):
+Optional logging variables (read via process.env, no secrets):
   - MUSHROOM_MOOD_LOG_LEVEL
-    * Values: 'debug', 'verbose', 'true', '1', or 'on' to enable
+    * Used by: lib/utils/observability.ts
+    * Values: 'debug', 'verbose', 'true', '1', or 'on' to enable verbose logging
   - ENABLE_VERBOSE_API_LOGGING
-    * Values: 'debug', 'verbose', 'true', '1', or 'on' to enable
+    * Used by: lib/utils/observability.ts
+    * Values: 'debug', 'verbose', 'true', '1', or 'on' to enable verbose logging
 
-Variables with hardcoded defaults (optional):
-  - SMHI_API_BASE_URL (defaults to https://opendata-download-metobs.smhi.se/api)
-  - SMHI_API_KEY (SMHI service is public; key not required)
-  - ARTDATABANKEN_API_BASE_URL (has default value)
-  - INATURALIST_API_BASE_URL (has default value)
-  - INATURALIST_API_KEY (future expansion, not actively used)
+Not in env — hardcoded defaults (no environment variable exists or is read):
+  - SMHI base URL: hardcoded as https://opendata-download-metobs.smhi.se/api
+  - ArtDatabanken observation search URL: hardcoded in lib/data/seasonalObservationPolicy.ts
+  - iNaturalist: referenced only as a dataset name in observation results, no API key used
+  - NEXT_PUBLIC_APP_ENV: present in earlier .env.example versions but not read by any app code
 ```
 
 Before `.env.example` is changed, confirm which variables are actually required by the current code. Search the full repo for:

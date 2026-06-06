@@ -64,29 +64,27 @@ Env-var discovery method:
   - Searched: lib/, app/api/, tests/ directories
   - Inspected: seasonalObservationRepository, observability utils, readiness service
 
-Required server-only vars:
-  - ARTDATABANKEN_API_KEY (critical: missing causes seasonal-evidence-unavailable)
+Vars read by the app code (complete list):
+  - ARTDATABANKEN_API_KEY  [server-only; critical]
+  - MUSHROOM_MOOD_LOG_LEVEL  [optional; logging only]
+  - ENABLE_VERBOSE_API_LOGGING  [optional; logging only]
 
-Vars with defaults or optional:
-  - SMHI_API_BASE_URL (has hardcoded default)
-  - SMHI_API_KEY (SMHI is public; key optional)
-  - ARTDATABANKEN_API_BASE_URL (has hardcoded default)
-  - INATURALIST_API_BASE_URL (has hardcoded default)
-  - INATURALIST_API_KEY (future expansion, not actively used)
+Not in env — hardcoded URLs and not read via process.env:
+  - SMHI base URL (hardcoded in weatherDataRepository.ts)
+  - ArtDatabanken observation URL (hardcoded in seasonalObservationPolicy.ts)
+  - iNaturalist referenced only as a dataset label in responses, no API call
 
-Required public vars (NEXT_PUBLIC_):
-  - NEXT_PUBLIC_APP_ENV (app environment identifier)
+Vars removed from .env.example (independent review finding):
+  - NEXT_PUBLIC_APP_ENV (not read by any app code)
+  - SMHI_API_BASE_URL (not read; URL hardcoded)
+  - SMHI_API_KEY (not read)
+  - ARTDATABANKEN_API_BASE_URL (not read; URL hardcoded in policy)
+  - INATURALIST_API_BASE_URL (not read; no iNaturalist API calls)
+  - INATURALIST_API_KEY (not read)
 
-Logging configuration (optional):
-  - MUSHROOM_MOOD_LOG_LEVEL (debug, verbose, true, 1, on)
-  - ENABLE_VERBOSE_API_LOGGING (debug, verbose, true, 1, on)
-
-Vars removed/renamed:
-  - REQUIRE_EXTERNAL_API_CONFIG was in .env.example but not used in code; removed
-
-Vercel scopes to configure:
-  - Preview scope for dev deployments
-  - Production scope for main/beta-baseline deployments
+Vercel scopes required:
+  - Preview scope for dev: ARTDATABANKEN_API_KEY, logging vars (optional)
+  - Production scope for main: ARTDATABANKEN_API_KEY, logging vars (optional)
 ```
 
 ## Secret inspection
@@ -122,25 +120,25 @@ Vercel scopes to configure:
   - Unauthenticated/incognito access check: ⏳ Pending
   - Notes: Must verify no arbitrary access before deployment baseline is accepted
 - Required Vercel Environment Variables configured in correct scopes:
-  - Status: ⏳ Pending manual configuration in Vercel console
-  - Preview scope for `dev`: NEXT_PUBLIC_APP_ENV, ARTDATABANKEN_API_KEY, logging vars (optional)
-  - Production scope for `main` if used: NEXT_PUBLIC_APP_ENV, ARTDATABANKEN_API_KEY, logging vars (optional)
-  - Notes, no values: Configuration documented in docs/deployment.md § "Step 4: Set Environment Variables"
+  - Status: ⏳ Blocked on owner manual setup
+  - Preview scope for `dev`: ARTDATABANKEN_API_KEY (required), logging vars (optional)
+  - Production scope for `main` if used: ARTDATABANKEN_API_KEY (required), logging vars (optional)
+  - Notes, no values: Configuration steps documented in docs/deployment.md § "Step 4: Set Environment Variables"
 - Local `.env.local` confirmed ignored by Git:
   - Status: ✓ Verified
   - Notes: .gitignore line 34: `.env*` excludes all .env files; line 37: `!.env.example` allows committed example
 - `.env.example` updated with required names only:
-  - Status: ✓ Updated
-  - Notes: Removed unused REQUIRE_EXTERNAL_API_CONFIG; added detailed comments explaining each variable
+  - Status: ✓ Updated (corrected in targeted re-implementation)
+  - Notes: Narrowed to the 3 vars the code actually reads. Removed NEXT_PUBLIC_APP_ENV, SMHI_API_BASE_URL/KEY, ARTDATABANKEN_API_BASE_URL, INATURALIST_API_BASE_URL/KEY — none are read via process.env.
 - External API runtime behavior checked:
   - Status: ✓ Verified through code review and test suite
   - Notes: Missing API config returns controlled degradation (missing evidence, reduced confidence, fallback calendar)
 - Rollback procedure documented:
-  - Status:
-  - Notes:
+  - Status: ✓ Documented in docs/deployment.md § "Rollback procedure"
+  - Notes: Vercel rollback UI + Git revert fallback; smoke check after restore
 - Disable-beta procedure documented:
-  - Status:
-  - Notes:
+  - Status: ✓ Documented in docs/deployment.md § "Disable-beta procedure"
+  - Notes: Remove public access, tighten Vercel protection, disable/unalias if needed, rotate secrets if exposure suspected
 
 ## Post-fix validation
 
