@@ -4,6 +4,8 @@ Mushroom Mood is a Next.js app for checking weather signals that help indicate w
 
 **Weather signals for when your mushroom spot is worth checking.**
 
+[![Tests](https://github.com/OscarFilip/mushroom-mood/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/OscarFilip/mushroom-mood/actions/workflows/tests.yml)
+
 ## Status
 
 The app includes a working spot-check flow: choose a location and species, get a readiness result with probability, confidence, and seasonal state. Weather history data feeds the readiness calculation from SMHI.
@@ -14,6 +16,15 @@ The app includes a working spot-check flow: choose a location and species, get a
 - [Feature flows](./docs/feature-flows.md)
 - [Architecture](./docs/architecture.md)
 - [Definition of done and testing](./docs/done-and-testing.md)
+
+## Deployment
+
+Deployment runs on Vercel.
+
+- Preview deployments are used for `dev` live testing.
+- `main` is reserved as the future beta baseline and is protected before app-level auth.
+- Vercel is the source of truth for deployment status.
+- [Deployment docs](./docs/deployment.md) contain the current deployment model, environment variable rules, rollback steps, and disable-beta procedure.
 
 ## Development
 
