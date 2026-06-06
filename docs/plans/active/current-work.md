@@ -8,7 +8,7 @@ Update this file before you ask an agent to continue work from repository contex
 
 ## Stage
 
-`implementation`
+`review`
 
 Allowed values:
 
@@ -18,7 +18,7 @@ Allowed values:
 
 ## Current owner
 
-`human` (requires manual Vercel account setup)
+`human`
 
 Examples:
 
@@ -29,7 +29,7 @@ Examples:
 
 ## Current review round
 
-`not-started`
+`independent-review-1`
 
 Examples:
 
@@ -51,16 +51,12 @@ Examples:
 
 ## Expected next action
 
-Implementation is code-complete with self-review passed. The next actions are manual Vercel setup and owner validation:
+Independent review found blocking documentation/slice-state issues.
 
-1. Read `docs/deployment.md` § "Vercel Project Setup (Initial Configuration)"
-2. Follow the 6-step setup process in your Vercel account (web browser)
-3. Configure environment variables in Vercel for both Preview (dev) and Production (main) scopes
-4. Verify deployments work and `main`/beta-baseline is not publicly accessible
-5. Tag the baseline commit and record deployment URLs
-6. Return here and advance to review stage
-
-All code-level implementation, testing, and documentation are complete. No code changes needed by owner.
+1. Narrow `.env.example` and deployment docs to the exact env vars the app actually reads.
+2. Do not accept the slice as review-complete until the Vercel/GitHub mapping, deployment protection, and env-scope setup are actually performed or a blocker is documented.
+3. Update the execution log with real deployment-validation results once the manual setup is done.
+4. Request a targeted re-review after those findings are addressed.
 
 ## Exact handoff question
 
