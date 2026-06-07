@@ -1,7 +1,7 @@
-@startuml feature-account-page
-title Account Page Feature Flow
+@startuml feature-account-page-target
+title Account Page Target Feature Flow
 
-' Status: Planned
+' Purpose: Show the planned account-area flow for a later account feature slice.
 
 actor User
 participant "Account Page" as AccountPage

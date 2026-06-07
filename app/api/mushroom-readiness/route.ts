@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth';
+import { isBetaAllowed } from '../../../lib/auth/allowlist';
 import { getMushroomReadiness } from '../../../lib/services/mushroomReadinessService';
 import { isValidSpeciesId } from '../../../lib/data/mushroomSpecies';
 import { validateCoordinates } from '../../../lib/utils/validation';
@@ -13,6 +16,14 @@ function parseCoordinate(value: string): number {
 
 export async function GET(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!isBetaAllowed(session.user.email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const latitude = searchParams.get('latitude');
     const longitude = searchParams.get('longitude');

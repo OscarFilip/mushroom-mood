@@ -15,6 +15,13 @@ If `current-work.md` still contains placeholders, the agent should stop and ask 
 
 When work moves between planning, implementation, self-check, independent review, and targeted re-review, keep `current-work.md` current so the next handoff is scoped and explicit.
 
+
+## Token-efficient handoff
+
+Keep `current-work.md` narrow enough that an agent can start without scanning the whole repository. Prefer context tiers over one broad file list: `Read immediately`, `Read only when changing or validating that area`, `Update during work`, and `Do not read unless directly relevant`.
+
+Name exact plan, decision log, execution log, review file, tests, durable docs, and UML source files only in the tier where they are needed for the current stage. Do not list generated diagram outputs, archives, dependency directories, build artifacts, or unrelated feature files unless the next handoff really needs them.
+
 ## Expected contents
 
 - `current-work.md`

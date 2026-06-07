@@ -45,6 +45,13 @@ Optional supporting files:
 - Plan, log, review, and checklist files are shared artifacts for humans and agents.
 - Template files in `_templates/` support those shared artifacts.
 
+
+## Token-efficient planning context
+
+Use `current-work.md` to constrain what agents should read next. Prefer context tiers over broad primary-file lists, and avoid using the handoff file as a complete project index.
+
+Keep each tier specific to the active slice and current stage. When a feature completes, archive old slice files so future agents do not spend credits deciding whether stale plans are still active.
+
 ## Template notes
 
 - Use `_templates/current-work-template.md` when creating or resetting `active/current-work.md`.

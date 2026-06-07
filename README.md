@@ -31,8 +31,32 @@ Deployment runs on Vercel.
 Start the app:
 
 ```bash
+npm run db:migrate
 npm run dev
 ```
+
+Neon-backed local database:
+
+```bash
+npm run db:migrate
+npm run dev
+```
+
+Schema workflow with Drizzle:
+
+```bash
+# After changing lib/db/schema.ts
+npm run db:generate
+npm run db:migrate
+```
+
+Quick disposable local sync:
+
+```bash
+npm run db:push
+```
+
+Set `DATABASE_URL` in `.env.local` to your local Neon database connection string before running the app or Drizzle commands.
 
 Logging modes:
 
@@ -55,6 +79,10 @@ Remove-Item Env:MUSHROOM_MOOD_LOG_LEVEL
 
 Useful scripts:
 
+- `npm run db:generate`
+- `npm run db:migrate`
+- `npm run db:push`
+- `npm run db:studio`
 - `npm test`
 - `npm run test:watch`
 - `npm run test:coverage`

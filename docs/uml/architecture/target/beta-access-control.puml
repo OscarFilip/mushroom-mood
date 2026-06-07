@@ -1,0 +1,81 @@
+@startuml architecture-beta-access-control-target
+title Beta Access Control Target Architecture
+
+' Purpose: Show future beta access-control architecture differences beyond the implemented boundary.
+
+actor "Browser User" as User
+participant "Protected Pages and API Routes" as AppRoutes
+participant "Shared Access Boundary" as AccessGuard
+participant "Restricted/Admin UI Surface" as AdminUi
+participant "Auth.js Email Auth" as AuthJs
+participant "Resend Email Provider" as Resend
+participant "Beta Access Policy" as BetaPolicy
+participant "Admin Access Policy" as AdminPolicy
+collections "Server Env: BETA_ALLOWED_EMAILS" as BetaEnv
+collections "Server Env: BETA_ADMIN_EMAILS" as AdminEnv
+database "Postgres" as Postgres
+participant "Drizzle + Auth.js Adapter" as Persistence
+participant "Denied / Forbidden UI" as DeniedUi
+
+User -> AppRoutes: Request beta page or protected API
+AppRoutes -> AccessGuard: Require beta access
+
+alt No valid session
+  AccessGuard -> AuthJs: Start email magic-link sign-in
+  AuthJs -> Resend: Send login email
+  User -> AuthJs: Open callback link
+  AuthJs -> Persistence: Store or read user and verification token
+  Persistence -> Postgres: Auth.js tables
+  AuthJs --> AccessGuard: Signed-in email identity
+else Valid session exists
+  AccessGuard -> AuthJs: Read signed-in identity
+  AuthJs --> AccessGuard: Signed-in email identity
+end
+
+AccessGuard -> BetaPolicy: Check beta access
+BetaPolicy -> BetaEnv: Load comma-separated allowlist
+BetaPolicy -> BetaPolicy: Lowercase and trim emails
+
+alt Invited beta identity
+  BetaPolicy --> AccessGuard: Allow beta access
+  AccessGuard --> AppRoutes: Continue protected request
+  AppRoutes --> User: Render beta app or API result
+else Not invited or missing identity
+  BetaPolicy --> AccessGuard: Deny beta access
+  AccessGuard --> DeniedUi: Invite-only state or 401/403
+end
+
+User -> AdminUi: Open future restricted/admin surface
+AdminUi -> AccessGuard: Require restricted access
+AccessGuard -> AdminPolicy: Check admin access
+AdminPolicy -> AdminEnv: Load comma-separated admin allowlist
+AdminPolicy -> AdminPolicy: Lowercase and trim emails
+
+alt Admin identity
+  AdminPolicy --> AccessGuard: Allow restricted request
+  AccessGuard --> AdminUi: Continue restricted request
+else Beta-only identity
+  AdminPolicy --> AccessGuard: Deny restricted request
+  AccessGuard --> DeniedUi: Forbidden state or 403
+end
+
+note right of AccessGuard
+The current beta gate is implemented.
+This target diagram now only preserves future differences,
+such as a dedicated restricted/admin surface reusing the
+separate admin policy boundary.
+end note
+
+note right of AdminPolicy
+Beta tester access does not imply admin access.
+The current repo still has no implemented admin/species UI;
+this target keeps the future restricted boundary explicit.
+end note
+
+note right of Postgres
+One durable product database already supports Auth.js data.
+Feedback persistence is documented in the separate
+beta feedback diagrams.
+end note
+
+@enduml

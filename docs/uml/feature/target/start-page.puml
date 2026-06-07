@@ -1,7 +1,7 @@
-@startuml feature-start-page
-title Start Page Feature Flow
+@startuml feature-start-page-target
+title Start Page Target Feature Flow
 
-' Status: Planned
+' Purpose: Show the planned main spot-check flow for the future start page.
 
 actor User
 participant "Start Page" as StartPage

@@ -1,0 +1,42 @@
+@startuml architecture-beta-feedback-target
+title Beta Feedback Target Architecture
+
+' Purpose: Show future feedback-boundary differences beyond the implemented persistence foundation.
+
+actor "Invited Beta Tester" as BetaTester
+participant "Visible Feedback Form" as AppUi
+participant "Feedback API Route" as FeedbackApi
+participant "Access Guard / Middleware" as AccessGuard
+participant "Beta Access Policy" as BetaPolicy
+participant "Feedback Repository" as FeedbackRepo
+participant "Drizzle ORM" as Drizzle
+database "Postgres" as Postgres
+
+BetaTester -> AppUi: Submit helpful/wrong/unclear feedback and optional note
+AppUi -> FeedbackApi: POST result context and note
+FeedbackApi -> AccessGuard: Require signed-in invited beta user
+AccessGuard -> BetaPolicy: Normalize email and check beta allowlist
+
+alt Invited beta identity
+  BetaPolicy --> AccessGuard: Allow feedback write
+  AccessGuard --> FeedbackApi: User id and email
+  FeedbackApi -> FeedbackRepo: Build approved feedback record
+  FeedbackRepo -> Drizzle: Insert feedback row
+  Drizzle -> Postgres: feedback table
+  FeedbackApi --> AppUi: 201 Created
+  AppUi --> BetaTester: Show saved confirmation
+else Missing session or non-invited identity
+  BetaPolicy --> AccessGuard: Deny feedback write
+  AccessGuard --> FeedbackApi: 401/403
+  FeedbackApi --> AppUi: Feedback not saved
+  AppUi --> BetaTester: Show sign-in or invite-only state
+end
+
+note right of FeedbackRepo
+The persistence foundation is already implemented.
+This target diagram now preserves the future difference:
+an exposed user-facing feedback form with explicit
+classification choices in the UI.
+end note
+
+@enduml

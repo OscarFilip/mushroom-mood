@@ -11,18 +11,26 @@ This folder holds the project docs.
 - [PlantUML source](./uml/): editable `.puml` files
 - [Rendered diagrams](./uml/out/): generated SVG files used in the markdown docs
 
+Current source layout:
+
+- `docs/uml/feature/current/`: implemented user-visible feature flows
+- `docs/uml/feature/target/`: planned or in-progress feature flows
+- `docs/uml/architecture/current/`: implemented architecture diagrams
+- `docs/uml/architecture/target/`: planned or in-progress architecture diagrams
+
 ## Diagram file names
 
-- Use `feature-<name>.puml` for product or user flows.
+- Use `feature-<name>.puml` for current implemented product or user flows.
+- Use `feature-<name>-target.puml` for planned or in-progress product or user flows.
 - Use `architecture-<name>.puml` for current-state architecture diagrams.
 - Use `architecture-<name>-target.puml` for planned or in-progress architecture diagrams.
 - Keep each diagram focused on one feature or subsystem.
 
 ## Diagram lifecycle
 
-- Treat the current-state architecture diagram as the source of truth for what the app does now.
+- Treat current-state diagrams as the source of truth for what the app does now.
 - Use a separate target-state diagram while you plan or build a larger change.
-- Add a short status note such as `Planned` or `In Progress` to target-state diagrams.
+- Prefer the file name, not an internal comment, as the primary status signal for current vs target diagrams.
 - When the implementation is stable, update the current-state diagram.
 - Then remove or archive the target-state diagram so the docs stay current.
 
@@ -30,6 +38,13 @@ This folder holds the project docs.
 
 - Add a feature-flow diagram when you need to explain user steps, decisions, or edge cases.
 - Add an architecture diagram when you need to explain responsibilities across pages, APIs, services, repositories, or external systems.
+
+## Feature-flow status rules
+
+- Keep `feature-<name>.puml` limited to user-visible behavior that is implemented now.
+- Put planned or materially different future user-visible behavior in `feature-<name>-target.puml`.
+- Do not mix current and future behavior in one feature-flow file when the difference matters for review or planning.
+- Use `docs/feature-flows.md` as the index that links current and target feature-flow diagrams.
 
 ## Recommended workflow
 
