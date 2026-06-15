@@ -1,4 +1,4 @@
-@startuml architecture-beta-feedback-target
+@startuml beta-feedback
 title Beta Feedback Target Architecture
 
 ' Purpose: Show future feedback-boundary differences beyond the implemented persistence foundation.

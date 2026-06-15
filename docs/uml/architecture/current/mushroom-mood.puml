@@ -1,4 +1,4 @@
-@startuml architecture-mushroom-mood
+@startuml mushroom-mood
 title Mushroom Mood Current-State Architecture Flow
 
 ' Status: Implemented

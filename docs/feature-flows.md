@@ -2,10 +2,10 @@
 
 This page collects diagrams for user-facing behavior.
 
-Use this naming rule:
+Use this location rule:
 
-- `feature-<name>.puml` means the current implemented user-visible flow.
-- `feature-<name>-target.puml` means a planned or in-progress user-visible flow.
+- `docs/uml/feature/current/<name>.puml` means the current implemented user-visible flow.
+- `docs/uml/feature/target/<name>.puml` means a planned or in-progress user-visible flow.
 
 ## Current implemented flows
 

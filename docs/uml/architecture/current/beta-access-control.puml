@@ -1,4 +1,4 @@
-@startuml architecture-beta-access-control-current
+@startuml beta-access-control
 title Beta Access Control Current Architecture
 
 ' Purpose: Show the implemented app-level auth, beta gate, and restricted/admin policy boundaries.

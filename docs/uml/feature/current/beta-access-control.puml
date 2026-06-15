@@ -1,4 +1,4 @@
-@startuml feature-beta-access-control
+@startuml beta-access-control
 title Beta Access Control Feature Flow
 
 ' Purpose: Show the user-visible invite-only beta journey. Technical persistence and admin policy details live in architecture diagrams.

@@ -1,4 +1,4 @@
-@startuml architecture-beta-feedback-current
+@startuml beta-feedback
 title Beta Feedback Current Architecture
 
 ' Purpose: Show the implemented feedback persistence boundary behind the protected feedback API.

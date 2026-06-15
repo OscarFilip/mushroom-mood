@@ -1,4 +1,4 @@
-@startuml feature-settings-page-target
+@startuml settings-page
 title Settings Page Target Feature Flow
 
 ' Purpose: Show the planned settings flow for a later settings feature slice.

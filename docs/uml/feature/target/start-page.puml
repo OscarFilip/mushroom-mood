@@ -1,4 +1,4 @@
-@startuml feature-start-page-target
+@startuml start-page
 title Start Page Target Feature Flow
 
 ' Purpose: Show the planned main spot-check flow for the future start page.

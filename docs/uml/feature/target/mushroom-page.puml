@@ -1,4 +1,4 @@
-@startuml feature-mushroom-page-target
+@startuml mushroom-page
 title Mushroom Page Target Feature Flow
 
 ' Purpose: Show the planned species-catalog flow, including the future restricted species-management path.
