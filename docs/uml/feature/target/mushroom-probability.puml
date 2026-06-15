@@ -1,7 +1,7 @@
-@startuml feature-mushroom-probability
-title Mushroom Probability Detail Feature Flow
+@startuml feature-mushroom-probability-target
+title Mushroom Probability Detail Target Feature Flow
 
-' Status: Mixed - implemented explanation flow, later contributor/admin flow still planned
+' Purpose: Show the later planned contributor and admin flow that builds on the current explanation transparency path.
 
 actor User
 actor "Privileged Contributor" as Contributor
@@ -19,11 +19,11 @@ ProbabilityExplanation --> User: Show understandable seasonal, weather, and spec
 ProbabilityExplanation --> User: Show seasonal evidence quality, radius used, lookback, raw observations, weighted score, and distinct years
 
 alt User only wants transparency
-	ProbabilityExplanation --> User: Explain why readiness and confidence are high, medium, or low
+  ProbabilityExplanation --> User: Explain why readiness and confidence are high, medium, or low
 else Contributor and admin features are used later
-	Contributor -> FeedbackReviewFlow: Submit species-specific improvement input
-	Admin -> SpeciesAlgorithmSettings: Review accepted input and adjust species algorithm settings
-	SpeciesAlgorithmSettings --> User: Show when a species-specific rule change affects visible explanation
+  Contributor -> FeedbackReviewFlow: Submit species-specific improvement input
+  Admin -> SpeciesAlgorithmSettings: Review accepted input and adjust species algorithm settings
+  SpeciesAlgorithmSettings --> User: Show when a species-specific rule change affects visible explanation
 end
 
 note right of FeedbackReviewFlow

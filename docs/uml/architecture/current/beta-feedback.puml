@@ -1,0 +1,54 @@
+@startuml architecture-beta-feedback-current
+title Beta Feedback Current Architecture
+
+' Purpose: Show the implemented feedback persistence boundary behind the protected feedback API.
+
+actor "Signed-in Beta User" as BetaTester
+participant "App UI or Caller" as AppUi
+participant "Feedback API Route" as FeedbackApi
+participant "Auth.js Session Read" as AuthJs
+participant "Beta Access Policy" as BetaPolicy
+participant "Admin Access Policy" as AdminPolicy
+participant "Feedback Repository" as FeedbackRepo
+participant "Drizzle ORM" as Drizzle
+database "Postgres" as Postgres
+
+BetaTester -> AppUi: Trigger feedback submission flow if exposed
+AppUi -> FeedbackApi: POST result context and optional note
+FeedbackApi -> AuthJs: Read signed-in session
+FeedbackApi -> BetaPolicy: Check invited beta access
+
+alt Invited beta identity
+  BetaPolicy --> FeedbackApi: Allow feedback write
+  FeedbackApi -> FeedbackRepo: Build approved feedback record
+  FeedbackRepo -> Drizzle: Insert feedback row
+  Drizzle -> Postgres: feedback table
+  FeedbackApi --> AppUi: 201 Created
+else Missing session or non-invited identity
+  BetaPolicy --> FeedbackApi: 401/403
+  FeedbackApi --> AppUi: Feedback not saved
+end
+
+AppUi -> FeedbackApi: GET feedback records if admin flow is used
+FeedbackApi -> AuthJs: Read signed-in session
+FeedbackApi -> AdminPolicy: Check admin access
+
+alt Admin identity
+  AdminPolicy --> FeedbackApi: Allow feedback read
+  FeedbackApi -> FeedbackRepo: Load feedback records
+  FeedbackRepo -> Drizzle: Select feedback rows
+  Drizzle -> Postgres: feedback table
+  FeedbackApi --> AppUi: 200 OK with feedback records
+else Non-admin identity
+  AdminPolicy --> FeedbackApi: 401/403
+  FeedbackApi --> AppUi: Feedback records not returned
+end
+
+note right of FeedbackRepo
+Implemented persistence foundation:
+user id, email, result context, timestamp,
+and optional note.
+No feedback review UI is implemented in this slice.
+end note
+
+@enduml

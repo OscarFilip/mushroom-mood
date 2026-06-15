@@ -1,0 +1,58 @@
+@startuml feature-beta-access-control-target
+title Beta Access Control Target Feature Flow
+
+' Purpose: Show the planned user-visible beta journey after feedback submission is exposed in the UI.
+
+actor Visitor
+actor "Invited Beta Tester" as BetaTester
+actor "Non-invited User" as NonInvited
+participant "Beta URL" as BetaUrl
+participant "Sign-in Page" as SignIn
+participant "Auth Magic-Link Email" as MagicLink
+participant "Whole-App Beta Gate" as Gate
+participant "Main Mushroom Mood App" as MainApp
+participant "Feedback Form" as Feedback
+participant "Denied / Forbidden State" as Denied
+
+Visitor -> BetaUrl: Open deployed beta URL
+BetaUrl -> Gate: Request protected page or app API
+
+alt No valid session
+  Gate --> SignIn: Show sign-in requirement
+  Visitor -> SignIn: Enter email
+  SignIn -> MagicLink: Send magic-link email
+  Visitor -> MagicLink: Open callback link
+  MagicLink --> Gate: Return signed-in email identity
+else Valid session exists
+  Gate -> Gate: Read signed-in email identity
+end
+
+Gate -> Gate: Normalize email and check beta allowlist
+
+alt Signed-in email is invited
+  Gate --> MainApp: Show beta app
+  BetaTester -> MainApp: Run readiness flow
+  MainApp --> BetaTester: Show result and explanation
+  BetaTester -> Feedback: Submit helpful/wrong/unclear feedback and optional note
+  Feedback -> Gate: Confirm invited signed-in beta user
+  Gate --> Feedback: Accept feedback submission
+  Feedback --> BetaTester: Show saved confirmation
+else Signed-in email is not invited
+  Gate --> Denied: Show invite-only denied copy
+  NonInvited -> Denied: Cannot continue into beta app
+else Session is invalid or expired
+  Gate --> SignIn: Ask user to sign in again
+end
+
+BetaTester -> MainApp: Log out
+MainApp -> Gate: Clear signed-in state
+Gate --> SignIn: Return to signed-out state
+
+note right of Gate
+This target feature-flow stays user-visible.
+Auth.js, Resend, Drizzle, Postgres,
+admin policy, and persistence details live
+in architecture diagrams.
+end note
+
+@enduml

@@ -1,7 +1,7 @@
-@startuml feature-settings-page
-title Settings Page Feature Flow
+@startuml feature-settings-page-target
+title Settings Page Target Feature Flow
 
-' Status: Planned
+' Purpose: Show the planned settings flow for a later settings feature slice.
 
 actor User
 participant "Settings Page" as SettingsPage

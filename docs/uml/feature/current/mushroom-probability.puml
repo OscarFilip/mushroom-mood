@@ -1,0 +1,19 @@
+@startuml feature-mushroom-probability
+title Mushroom Probability Detail Feature Flow
+
+' Purpose: Show the current implemented explanation transparency flow after a user opens a mushroom detail view.
+
+actor User
+participant "Mushroom Detail View" as MushroomDetailView
+participant "Probability Explanation" as ProbabilityExplanation
+
+User -> MushroomDetailView: Open mushroom detail
+MushroomDetailView --> User: Show readiness label, probability, confidence, and seasonal state
+
+User -> ProbabilityExplanation: Open explanation
+ProbabilityExplanation --> User: Show understandable seasonal, weather, and species-profile inputs and how they affect the result
+ProbabilityExplanation --> User: Show seasonal evidence quality, radius used, lookback, raw observations, weighted score, and distinct years
+
+ProbabilityExplanation --> User: Explain why readiness and confidence are high, medium, or low
+
+@enduml

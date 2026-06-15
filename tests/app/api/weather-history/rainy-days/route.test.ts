@@ -1,13 +1,49 @@
+jest.mock('next-auth', () => ({
+  default: jest.fn(),
+  getServerSession: jest.fn(),
+}));
+
+jest.mock('@/app/auth', () => ({
+  authOptions: {},
+}));
+
+jest.mock('@/lib/auth/allowlist', () => ({
+  isBetaAllowed: jest.fn().mockReturnValue(true),
+}));
+
 jest.mock('@/lib/services/weatherHistoryService', () => ({
   getHistoricalWeatherData: jest.fn(),
 }));
 
 import { GET } from '@/app/api/weather-history/rainy-days/route';
 import { getHistoricalWeatherData } from '@/lib/services/weatherHistoryService';
+import { getServerSession } from 'next-auth';
+import { isBetaAllowed } from '@/lib/auth/allowlist';
+
+const mockGetServerSession = getServerSession as jest.Mock;
+const mockIsBetaAllowed = isBetaAllowed as jest.Mock;
 
 describe('GET /api/weather-history/rainy-days', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetServerSession.mockResolvedValue({ user: { email: 'test@example.com' } });
+    mockIsBetaAllowed.mockReturnValue(true);
+  });
+
+  it('returns 401 when unauthenticated', async () => {
+    mockGetServerSession.mockResolvedValue(null);
+    const request = new Request('http://localhost/api/weather-history/rainy-days?latitude=57.1134&longitude=12.7732');
+    const response = await GET(request);
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: 'Unauthorized' });
+  });
+
+  it('returns 403 when authenticated but not on beta allowlist', async () => {
+    mockIsBetaAllowed.mockReturnValue(false);
+    const request = new Request('http://localhost/api/weather-history/rainy-days?latitude=57.1134&longitude=12.7732');
+    const response = await GET(request);
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Forbidden' });
   });
 
   it('returns 400 when latitude or longitude is missing', async () => {

@@ -6,7 +6,7 @@ on:
       - main
     paths:
       # Only PlantUML source changes should retrigger rendering.
-      - 'docs/uml/*.puml'
+      - 'docs/uml/**/*.puml'
       - '.github/workflows/plantuml.yml'
   workflow_dispatch:
 
@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t diagrams < <(find docs/uml -maxdepth 1 -type f -name '*.puml' | sort)
+          mapfile -t diagrams < <(find docs/uml -type f -name '*.puml' ! -path 'docs/uml/out/*' | sort)
 
           if [ "${#diagrams[@]}" -eq 0 ]; then
             echo "No PlantUML files found in docs/uml" >&2
@@ -37,16 +37,25 @@ jobs:
           fi
 
           mkdir -p docs/uml/out
-          find docs/uml/out -maxdepth 1 -type f -name '*.svg' -delete
+          find docs/uml/out -type f -name '*.svg' -delete
 
-          docker run --rm \
-            -v "$PWD:/workspace" \
-            -w /workspace \
-            plantuml/plantuml:latest \
-            -failfast2 \
-            -tsvg \
-            -o out \
-            "${diagrams[@]}"
+          for diagram in "${diagrams[@]}"; do
+            relative="${diagram#docs/uml/}"
+            subdir="$(dirname "$relative")"
+            output_dir="docs/uml/out/$subdir"
+            relative_output="$(realpath --relative-to="$(dirname "$diagram")" "$output_dir")"
+
+            mkdir -p "$output_dir"
+
+            docker run --rm \
+              -v "$PWD:/workspace" \
+              -w /workspace \
+              plantuml/plantuml:latest \
+              -failfast2 \
+              -tsvg \
+              -o "$relative_output" \
+              "/workspace/$diagram"
+          done
 
       - name: Create PR for rendered SVGs when changed
         uses: peter-evans/create-pull-request@v7

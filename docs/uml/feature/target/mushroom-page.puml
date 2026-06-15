@@ -1,7 +1,7 @@
-@startuml feature-mushroom-page
-title Mushroom Page Feature Flow
+@startuml feature-mushroom-page-target
+title Mushroom Page Target Feature Flow
 
-' Status: Planned
+' Purpose: Show the planned species-catalog flow, including the future restricted species-management path.
 
 actor User
 participant "Mushroom Page" as MushroomPage

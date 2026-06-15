@@ -52,3 +52,19 @@ Each implemented flow should have at least:
 End-to-end tests may come later.
 
 For now, focus on strong unit tests and a small set of useful integration tests.
+## Access-control flow test strategy
+
+For beta access-control work, the minimum test bar is higher than link-hiding or happy-path UI checks because access control is a server-side boundary.
+
+Each access-control slice should cover:
+
+- allowlist parsing and normalized email comparison, including lowercase + trim behavior
+- logged-out visitor rejection
+- authenticated but non-invited user rejection
+- invited beta user access to the main app flow
+- beta user without admin access rejected from restricted/admin checks
+- admin/restricted identity allowed through admin checks when a restricted surface exists
+- direct URL or direct API access behaving the same as UI navigation
+- feedback persistence tests when feedback storage is part of the slice
+
+Manual deployed-environment checks are required before a beta access-control slice counts as beta-ready, because real Auth.js, Resend, Postgres, and validation identity configuration cannot be proven from local unit tests alone.

@@ -79,6 +79,14 @@ Before app-level auth exists, protect or withhold access using one or more provi
 
 Do not rely on obscure URLs as protection.
 
+Planned app-level beta access control for the next implementation slice:
+
+- Auth.js email magic-link sign-in through Resend.
+- Invite-only beta access controlled by `BETA_ALLOWED_EMAILS`.
+- Separate admin/restricted access controlled by `BETA_ADMIN_EMAILS`.
+- Whole-app gate except auth routes, logout/callback routes, denied/forbidden pages, static assets, and required framework/auth internals.
+- Provider-level deployment protection remains the emergency fallback and owner-only protection mechanism until app-level auth has been validated.
+
 ## Branch and promotion strategy
 
 - `main`
@@ -194,6 +202,29 @@ These values are hardcoded or not read from `process.env` in the current app:
 
 Do not add these to `.env.example` unless the code is changed to read them.
 
+### Planned beta access-control variables
+
+The `beta-access-control` implementation is expected to add these server-only variables to `.env.example` with placeholder values only and to the relevant Vercel scopes with real values:
+
+- `DATABASE_URL`
+  - Postgres connection string used by Drizzle, Auth.js persistence, and feedback persistence.
+- `AUTH_SECRET`
+  - Auth.js secret.
+- `AUTH_URL`
+  - Deployed app URL when required by the implemented Auth.js version/host setup.
+- `AUTH_TRUST_HOST`
+  - Host/proxy trust setting when required by the deployed Auth.js environment.
+- `RESEND_API_KEY`
+  - Resend API key for magic-link email delivery.
+- `EMAIL_FROM`
+  - Sender used for beta magic-link emails.
+- `BETA_ALLOWED_EMAILS`
+  - Comma-separated invite allowlist for beta entry. Values are lowercased and trimmed before comparison.
+- `BETA_ADMIN_EMAILS`
+  - Comma-separated allowlist for restricted/admin checks. Values are lowercased and trimmed before comparison.
+
+Do not commit real values for these variables. Manual setup of real values and validation identities is required before this slice counts as beta-ready.
+
 ## Secret handling
 
 Previously exposed or uncertain credentials have been rotated.
@@ -225,6 +256,87 @@ Do not add a health/config endpoint unless missing-config or dependency behavior
 
 If one is added, it must expose status only and never expose secret values. It must not become a public operational dashboard, and it must not make the `main`/Production deployment publicly usable before app-level auth exists.
 
+## Database workflow
+
+The repository uses Drizzle schema definitions in code and committed SQL migrations for durable database changes.
+
+Current source-of-truth pieces:
+
+- `lib/db/schema.ts`
+  - Table definitions for Auth.js persistence and beta feedback persistence.
+- `drizzle.config.ts`
+  - Drizzle configuration for schema generation, migration output, and database credentials.
+- `drizzle/`
+  - Committed SQL migrations and Drizzle metadata.
+
+Recommended command usage:
+
+- `npm run db:generate`
+  - Generate a new SQL migration after editing `lib/db/schema.ts`.
+- `npm run db:migrate`
+  - Apply committed migrations to the database referenced by `DATABASE_URL`.
+- `npm run db:push`
+  - Push the current schema directly to a database without creating a migration.
+  - Use this only for disposable local development when you explicitly do not want a committed migration.
+- `npm run db:studio`
+  - Open Drizzle Studio against the database referenced by `DATABASE_URL`.
+
+Do not rely on runtime table auto-creation in the application. The real database must already be migrated before auth and feedback persistence validation is considered trustworthy.
+
+### Local database workflow
+
+Local development can point directly at a dedicated Neon database.
+
+Store the local Neon connection string in `.env.local` as `DATABASE_URL`.
+
+Apply committed migrations locally:
+
+```bash
+npm run db:migrate
+```
+
+When changing the schema locally:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+If the local database needs a clean reset, recreate or reset the dedicated local Neon database, then rerun migrations. Record destructive resets only in local notes, not durable deployment docs.
+
+### Preview and production database workflow
+
+Preview and Production must use real hosted Postgres databases.
+
+Vercel deployments now run the committed Drizzle migrations automatically before the Next.js production build by using the repository `vercel.json` build command.
+
+That means Preview/dev and Production deploys will attempt to apply any unapplied committed migrations against the database referenced by `DATABASE_URL` before the app build completes.
+
+Apply the same committed Drizzle migrations manually only when you intentionally need to migrate a hosted database outside the normal Vercel deploy path.
+
+PowerShell example for applying migrations to Preview/dev from a local machine:
+
+```powershell
+$env:DATABASE_URL='postgresql://...preview database url...'
+npm run db:migrate
+Remove-Item Env:DATABASE_URL
+```
+
+PowerShell example for applying migrations to Production from a local machine:
+
+```powershell
+$env:DATABASE_URL='postgresql://...production database url...'
+npm run db:migrate
+Remove-Item Env:DATABASE_URL
+```
+
+Operational expectations:
+
+- Local and Preview should use separate Neon databases unless there is a deliberate documented exception.
+- Preview and Production should use separate databases unless there is a deliberate documented exception.
+- Run migrations before deployed manual validation when a new migration has been added.
+- Do not use `db:push` against shared or deployed databases as the normal workflow; use committed migrations instead.
+
 ## Baseline validation
 
 Before accepting a deployment as a beta baseline, run:
@@ -241,6 +353,7 @@ Also confirm:
 - The `dev` Preview deployment works for owner-only live testing.
 - The `main` Production deployment is not publicly usable before app-level auth exists.
 - Required Vercel environment variables are configured in the correct scopes.
+- The correct committed Drizzle migrations have been applied to the Preview or Production database before auth and feedback persistence checks.
 - Weather and seasonal evidence calls work or fail safely.
 - Missing critical API config does not produce normal-looking readiness results.
 - Rollback and disable-beta procedures are understood.
@@ -273,7 +386,7 @@ If the deployed environment needs to be taken out of use:
 4. Rotate secrets if exposure is suspected.
 5. Record the action in the relevant execution log or incident/change notes.
 
-For the current pre-auth beta stage, provider-level disablement is enough. Do not build a custom maintenance mode unless it becomes necessary later.
+Before app-level auth is implemented and validated, provider-level disablement is enough. After app-level auth is implemented, the fastest disable-beta option is still provider-level blocking or domain/alias removal, with `BETA_ALLOWED_EMAILS` cleared or tightened as an additional app-level control. Do not build a custom maintenance mode unless it becomes necessary later.
 
 ## Docs and UML policy
 

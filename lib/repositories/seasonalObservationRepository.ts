@@ -4,6 +4,7 @@ import {
   SeasonalObservationDataset,
   SeasonalObservationPolicy,
 } from '../data/seasonalObservationPolicy';
+import { logDebug, logError, logExternalApiEvent } from '../utils/observability';
 
 export interface SeasonalObservationResult {
   seasonalityScore: number | null;
@@ -75,6 +76,11 @@ export class SeasonalObservationRepository {
     const now = params.now ?? new Date();
 
     if (!this.apiKey) {
+      logError('[seasonal-observations] missing api key', {
+        taxonId: params.taxonId,
+        latitude: params.latitude,
+        longitude: params.longitude,
+      });
       return missingResult(['seasonal-evidence-unavailable']);
     }
 
@@ -82,6 +88,13 @@ export class SeasonalObservationRepository {
     const cached = this.cache.get(cacheKey);
 
     if (cached && now.getTime() - cached.cachedAt < TTL_MS) {
+      logDebug('[seasonal-observations] cache hit', {
+        taxonId: params.taxonId,
+        latitude: params.latitude,
+        longitude: params.longitude,
+        ageMs: now.getTime() - cached.cachedAt,
+        evidenceQuality: cached.result.evidenceQuality,
+      });
       return cached.result;
     }
 
@@ -89,8 +102,21 @@ export class SeasonalObservationRepository {
       const result = await this.fetchSeasonalEvidence(params, now);
       this.cache.set(cacheKey, { result, cachedAt: now.getTime() });
       return result;
-    } catch {
+    } catch (error) {
+      logError('[seasonal-observations] fetch failed', {
+        taxonId: params.taxonId,
+        latitude: params.latitude,
+        longitude: params.longitude,
+        errorMessage: error instanceof Error ? error.message : 'unknown error',
+      });
+
       if (cached && now.getTime() - cached.cachedAt < STALE_IF_ERROR_MS) {
+        logDebug('[seasonal-observations] using stale cache after fetch failure', {
+          taxonId: params.taxonId,
+          latitude: params.latitude,
+          longitude: params.longitude,
+          ageMs: now.getTime() - cached.cachedAt,
+        });
         return {
           ...cached.result,
           limitations: [...cached.result.limitations, 'seasonal-evidence-stale-cache'],
@@ -116,6 +142,16 @@ export class SeasonalObservationRepository {
       lastWeighted = weighted;
 
       const quality = this.assessQuality(weighted, now);
+      logDebug('[seasonal-observations] evaluated radius step', {
+        taxonId: params.taxonId,
+        radiusMeters: radius,
+        lookbackYears: baseLookbackYears,
+        rawObservationCount: raw.length,
+        filteredObservationCount: filtered.length,
+        weightedObservationCount: weighted.length,
+        evidenceQuality: quality,
+      });
+
       if (quality === 'sufficient') {
         const limitations: string[] = [];
         if (radius > primaryRadiusMeters) {
@@ -132,6 +168,16 @@ export class SeasonalObservationRepository {
     const weighted = this.weightObservations(filtered);
 
     const quality = this.assessQuality(weighted, now);
+    logDebug('[seasonal-observations] evaluated expanded lookback', {
+      taxonId: params.taxonId,
+      radiusMeters: maxRadius,
+      lookbackYears: expandedLookbackYears,
+      rawObservationCount: raw.length,
+      filteredObservationCount: filtered.length,
+      weightedObservationCount: weighted.length,
+      evidenceQuality: quality,
+    });
+
     const limitations: string[] = ['seasonal-evidence-expanded-radius'];
     if (weighted.length > lastWeighted.length) {
       limitations.push('seasonal-evidence-expanded-lookback');
@@ -184,13 +230,47 @@ export class SeasonalObservationRepository {
       },
     };
 
-    const response = await this.fetchFn(this.policy.source.observationSearchUrl, {
+    logExternalApiEvent('artdatabanken', 'request', {
+      url: this.policy.source.observationSearchUrl,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [this.policy.source.authHeaderName]: this.apiKey!,
-      },
-      body: JSON.stringify(body),
+      taxonId: params.taxonId,
+      radiusMeters,
+      lookbackYears,
+      startYear,
+      endYear,
+    });
+
+    let response: Response;
+
+    try {
+      response = await this.fetchFn(this.policy.source.observationSearchUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [this.policy.source.authHeaderName]: this.apiKey!,
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      logExternalApiEvent('artdatabanken', 'error', {
+        url: this.policy.source.observationSearchUrl,
+        method: 'POST',
+        taxonId: params.taxonId,
+        radiusMeters,
+        lookbackYears,
+        errorMessage: error instanceof Error ? error.message : 'unknown error',
+      });
+      throw error;
+    }
+
+    logExternalApiEvent('artdatabanken', 'response', {
+      url: this.policy.source.observationSearchUrl,
+      method: 'POST',
+      taxonId: params.taxonId,
+      radiusMeters,
+      lookbackYears,
+      status: response.status,
+      statusText: response.statusText,
     });
 
     if (!response.ok) {
@@ -198,6 +278,13 @@ export class SeasonalObservationRepository {
     }
 
     const data = (await response.json()) as ArtDatabankenSearchResponse;
+    logDebug('[seasonal-observations] raw response summary', {
+      taxonId: params.taxonId,
+      radiusMeters,
+      lookbackYears,
+      totalCount: data.totalCount ?? null,
+      recordsCount: data.records?.length ?? 0,
+    });
     return data.records ?? [];
   }
 

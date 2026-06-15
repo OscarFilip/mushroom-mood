@@ -66,14 +66,16 @@ The goal is to create a private environment where the rest of the beta work can 
 
 ### 2. Access control and beta-only entry
 
+Status note, 2026-06-15: the `beta-access-control` slice is complete for its approved scope. Auth.js email magic-link sign-in, invite-only access, separate admin/restricted policy, automated deploy-time migrations, and feedback persistence foundation are implemented and manually validated in the deployed environment. Remaining beta work moves to explanation clarity, broader feedback UX, monitoring, and launch readiness rather than reopening this slice.
+
 | Status | Task | Done means |
 | --- | --- | --- |
-| `[ ]` | Add login/sign-in | A tester can authenticate reliably in the deployed beta-like environment. |
-| `[ ]` | Add invite-only access | Non-invited users cannot reach the beta app, even if they know the URL. |
-| `[ ]` | Add role checks for restricted screens | Beta users cannot access restricted/admin-only routes, APIs, or species-management flows. |
-| `[ ]` | Add access-control tests | Tests cover invited user access, non-invited user rejection, unauthenticated rejection, and restricted/admin route blocking. |
-| `[ ]` | Manually test access boundaries | Login, logout, blocked access, invited access, and restricted-screen protection have been manually verified. |
-| `[ ]` | Re-check access control in the deployed environment | Access rules work outside local development. |
+| `[x]` | Add login/sign-in | A tester can authenticate reliably in the deployed beta-like environment. |
+| `[x]` | Add invite-only access | Non-invited users cannot reach the beta app, even if they know the URL. |
+| `[x]` | Add role checks for restricted screens | Beta users cannot access restricted/admin-only routes, APIs, or species-management flows. |
+| `[x]` | Add access-control tests | Tests cover invited user access, non-invited user rejection, unauthenticated rejection, and restricted/admin route blocking. |
+| `[x]` | Manually test access boundaries | Login, logout, blocked access, invited access, and restricted-screen protection have been manually verified. |
+| `[x]` | Re-check access control in the deployed environment | Access rules work outside local development. |
 
 ### 3. Readiness result clarity
 
@@ -90,13 +92,15 @@ The goal is to create a private environment where the rest of the beta work can 
 
 ### 4. Feedback capture
 
+Status note, 2026-06-15: feedback persistence foundation is implemented as part of `beta-access-control`, but a user-visible feedback submission and review experience is still future beta work. Keep the user-facing feedback items below scoped to that later slice.
+
 | Status | Task | Done means |
 | --- | --- | --- |
 | `[ ]` | Add simple result feedback | Testers can mark a result as `helpful`, `wrong`, or `unclear`. |
 | `[ ]` | Allow optional written feedback | Testers can add a short note when the result seems wrong or unclear. |
-| `[ ]` | Store feedback with result context | Feedback is saved with enough context to investigate later: result, explanation snapshot, selected species, selected spot/area, timestamp, confidence, limitations, and user/tester identity if available. |
+| `[~]` | Store feedback with result context | Backend persistence foundation exists and stores the approved context shape, but the broader user-facing feedback flow is not fully exposed yet. |
 | `[ ]` | Make feedback reviewable | You can find, read, and group submitted feedback without digging through raw logs only. |
-| `[ ]` | Decide recalibration policy | For beta, feedback is collected for review only and does not automatically change scoring unless you explicitly decide otherwise. |
+| `[x]` | Decide recalibration policy | For beta, feedback is collected for review only and does not automatically change scoring unless explicitly decided otherwise. Decision recorded in `beta-access-control` plan: no automatic recalibration in this slice. |
 | `[ ]` | Verify feedback in the deployed environment | Feedback submitted in the deployed beta-like environment is persisted and reviewable. |
 
 ### 5. External dependency resilience
@@ -147,7 +151,7 @@ The goal is to create a private environment where the rest of the beta work can 
 | Status | Task | Done means |
 | --- | --- | --- |
 | `[ ]` | Define the first tester cohort | You have a short list of named trusted testers. |
-| `[ ]` | Define how testers will get access | You know whether testers will receive accounts, invite links, allowlisted emails, or another access method. |
+| `[x]` | Define how testers will get access | Testers will sign in with Auth.js email magic links through Resend and must be listed in `BETA_ALLOWED_EMAILS`; admin/restricted access is separately controlled by `BETA_ADMIN_EMAILS`. |
 | `[ ]` | Define what kind of feedback you want | Testers know whether to focus on usefulness, explanation clarity, obvious wrongness, bugs, or confusing limitations. |
 | `[ ]` | Prepare the tester message | You have a short message explaining what the beta is, what it is not, how to use it, and how to report problems. |
 | `[ ]` | Invite only the first small cohort | You start with a small controlled group, not a broad public release. |

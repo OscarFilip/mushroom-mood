@@ -1,7 +1,7 @@
-@startuml feature-weather-page
-title Weather Page Feature Flow
+@startuml feature-weather-page-target
+title Weather Page Target Feature Flow
 
-' Status: Planned
+' Purpose: Show the planned deeper evidence view for weather and seasonal inputs.
 
 actor User
 participant "Weather Page" as WeatherPage

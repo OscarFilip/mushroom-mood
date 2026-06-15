@@ -10,6 +10,20 @@ This repository supports agent-assisted planning, documentation, implementation,
 - Do not introduce dependencies without a short justification in the decision log.
 - Do not remove or overwrite user-authored work unless the task explicitly requires it.
 
+
+## Token and credit efficiency
+
+- Start from `AGENTS.md` and `docs/plans/active/current-work.md`, then follow the context tiers for the current stage.
+- Read the `Read immediately` tier first. Open `Read only when changing or validating that area` files only after the active plan, decision log, targeted search results, or failing checks make them relevant.
+- Prefer targeted searches, file names, headings, and small excerpts before opening full files.
+- Avoid broad repository scans unless the task explicitly asks for a full audit or the active plan requires it.
+- Do not inspect generated files such as `docs/uml/out/*.svg` unless debugging generated output. Use `.puml` files as the source of truth.
+- Do not read archived plans, historical logs, lock files, build output, coverage output, or dependency directories unless directly relevant.
+- Reuse a short context summary instead of repeatedly rereading the same files in one work session.
+- Before expanding scope to additional durable docs, tests, migrations, or implementation areas, confirm that the active plan or current task requires them.
+- For large implementation or review tasks, keep the scope tied to the handoff question and stop once the stop condition can be answered.
+- If `current-work.md` points to many unrelated files or appears stale, ask for clarification instead of spending credits exploring the whole repo.
+
 ## Required workflow artifacts for non-trivial work
 
 For any feature or larger change, create or update files in `docs/plans/active/`:
@@ -58,8 +72,8 @@ Use the templates in `docs/plans/_templates/` as the starting point.
 ## Minimal-prompt operating mode
 
 - Prefer repository-driven execution over repeated user prompting.
-- After the user sets the active feature and stage, use `docs/plans/active/current-work.md` and the referenced feature files as the main operating context.
-- If `current-work.md` still contains placeholder values such as `<feature-name>` or lacks a concrete next action, stop and ask for clarification instead of guessing.
+- After the user sets the active feature and stage, use `docs/plans/active/current-work.md` and its context tiers as the main operating context.
+- If `current-work.md` still contains placeholder values such as `<feature-name>`, lacks context tiers, or lacks a concrete next action, stop and ask for clarification instead of guessing.
 - If the stage is `planning`, work on diagrams and planning artifacts, not implementation.
 - If the stage is `implementation`, implement only from the approved plan and keep logs updated.
 - If the stage is `review`, perform review only and write findings to the review file.

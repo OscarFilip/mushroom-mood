@@ -1,0 +1,75 @@
+@startuml architecture-beta-access-control-current
+title Beta Access Control Current Architecture
+
+' Purpose: Show the implemented app-level auth, beta gate, and restricted/admin policy boundaries.
+
+actor "Browser User" as User
+participant "Protected Pages and API Routes" as AppRoutes
+participant "Page/API Guards" as AccessGuard
+participant "Auth.js Email Auth" as AuthJs
+participant "Resend Email Provider" as Resend
+participant "Beta Access Policy" as BetaPolicy
+participant "Admin Access Policy" as AdminPolicy
+collections "Server Env: BETA_ALLOWED_EMAILS" as BetaEnv
+collections "Server Env: BETA_ADMIN_EMAILS" as AdminEnv
+participant "Drizzle + Auth.js Adapter" as Persistence
+database "Postgres" as Postgres
+participant "Readiness Services" as ReadinessServices
+participant "Denied UI / 401 / 403" as DeniedUi
+
+User -> AppRoutes: Request protected page or API
+AppRoutes -> AccessGuard: Require beta access
+
+alt No valid session
+  AccessGuard -> AuthJs: Start email magic-link sign-in
+  AuthJs -> Resend: Send login email
+  User -> AuthJs: Open callback link
+  AuthJs -> Persistence: Store or read user, session, and verification token
+  Persistence -> Postgres: Auth.js tables
+  AuthJs --> AccessGuard: Signed-in email identity
+else Valid session exists
+  AccessGuard -> AuthJs: Read signed-in identity
+  AuthJs --> AccessGuard: Signed-in email identity
+end
+
+AccessGuard -> BetaPolicy: Check beta access
+BetaPolicy -> BetaEnv: Load comma-separated allowlist
+BetaPolicy -> BetaPolicy: Lowercase and trim emails
+
+alt Invited beta identity
+  BetaPolicy --> AccessGuard: Allow beta access
+  AccessGuard --> AppRoutes: Continue protected request
+  AppRoutes -> ReadinessServices: Run normal app behavior when requested
+  ReadinessServices --> AppRoutes: Readiness payload
+  AppRoutes --> User: Render beta app or API result
+else Not invited or missing identity
+  BetaPolicy --> AccessGuard: Deny beta access
+  AccessGuard --> DeniedUi: Redirect or 401/403 response
+end
+
+User -> AppRoutes: Request restricted/admin API if one exists
+AppRoutes -> AccessGuard: Require restricted access
+AccessGuard -> AdminPolicy: Check admin access
+AdminPolicy -> AdminEnv: Load comma-separated admin allowlist
+AdminPolicy -> AdminPolicy: Lowercase and trim emails
+
+alt Admin identity
+  AdminPolicy --> AccessGuard: Allow restricted request
+  AccessGuard --> AppRoutes: Continue restricted request
+else Beta-only identity
+  AdminPolicy --> AccessGuard: Deny restricted request
+  AccessGuard --> DeniedUi: 403 response
+end
+
+note right of AccessGuard
+Implemented boundary: protected pages and APIs call shared guards.
+Auth routes, denied page, and framework internals stay outside
+the protected beta request path.
+end note
+
+note right of AdminPolicy
+Restricted/admin policy is implemented separately from beta access,
+even though the repo does not yet expose a full admin UI.
+end note
+
+@enduml
