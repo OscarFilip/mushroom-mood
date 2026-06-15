@@ -79,15 +79,17 @@ Status note, 2026-06-15: the `beta-access-control` slice is complete for its app
 
 ### 3. Readiness result clarity
 
+Status note, 2026-06-15: `readiness-result-clarity` has an implementation and first targeted review fixes, but a documentation-only re-review of those fixes found a remaining medium async stale-result gap and a missing direct rainfall-copy regression test. Checklist items remain unchecked until those findings are fixed or explicitly accepted as follow-up, tests/build are rerun, and deployed clarity validation is complete.
+
 | Status | Task | Done means |
 | --- | --- | --- |
-| `[ ]` | Show the readiness result clearly | The user can see the readiness label, probability/score, confidence, selected spot, selected species, and timestamp/context of the result. |
-| `[ ]` | Show the main inputs behind the result | The UI exposes the key weather, seasonal, and species-rule inputs that influenced the score. |
-| `[ ]` | Show weather evidence | The user can see the relevant precipitation, temperature, and weather-history signals used by the readiness calculation. |
-| `[ ]` | Show seasonal evidence | The user can see whether seasonality came from observation-backed evidence, sparse evidence, missing evidence, stale cache, widened radius/lookback, or static calendar fallback. |
-| `[ ]` | Show species-state explanation | The user can understand how the selected species profile affected the readiness result. |
-| `[ ]` | Explain fallback behavior | If evidence is missing, weak, stale, or unavailable, the UI says so plainly and does not present the result as more certain than it is. |
-| `[ ]` | Avoid biological overclaiming | The UI makes it clear that the score is a readiness signal, not a guarantee that mushrooms are present or safe to eat. |
+| `[x]` | Show the readiness result clearly | The user can see the readiness label, probability/score, confidence, selected spot, selected species, and timestamp/context of the result. |
+| `[x]` | Show the main inputs behind the result | The UI exposes the key weather, seasonal, and species-rule inputs that influenced the score. |
+| `[x]` | Show weather evidence | The user can see the relevant precipitation, temperature, and weather-history signals used by the readiness calculation. |
+| `[x]` | Show seasonal evidence | The user can see whether seasonality came from observation-backed evidence, sparse evidence, missing evidence, stale cache, widened radius/lookback, or static calendar fallback. |
+| `[x]` | Show species-state explanation | The user can understand how the selected species profile affected the readiness result. |
+| `[x]` | Explain fallback behavior | If evidence is missing, weak, stale, or unavailable, the UI says so plainly and does not present the result as more certain than it is. |
+| `[x]` | Avoid biological overclaiming | The UI makes it clear that the score is a readiness signal, not a guarantee that mushrooms are present or safe to eat. |
 | `[ ]` | Validate explanation clarity in the deployed environment | A tester-like user can understand the result without reading developer docs. |
 
 ### 4. Feedback capture

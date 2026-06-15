@@ -2,10 +2,11 @@
 title Mushroom Mood Current-State Architecture Flow
 
 ' Status: Implemented
-' Purpose: Show the current implemented boundaries for the Mushroom Mood readiness flow after observation-backed seasonality was added.
+' Purpose: Show the current implemented boundaries for the Mushroom Mood readiness flow after the readiness-result-clarity slice.
 
 actor User
 participant "Mushroom Mood UI" as AppUi
+participant "Readiness Result View Model" as ReadinessViewModel
 participant "Mushroom Readiness API Route" as ReadinessRoute
 participant "Readiness Service" as ReadinessService
 database "Curated Species Catalog and Rules" as SpeciesCatalog
@@ -48,10 +49,14 @@ alt Required inputs are available
   ReadinessService -> ReadinessService: Combine seasonal evidence, weather, and species thresholds
   ReadinessService --> ReadinessRoute: Readiness label, probability, confidence, and explanation inputs
   ReadinessRoute --> AppUi: 200 OK result payload
-  AppUi --> User: Show result, confidence, limitations, and seasonal evidence details
+  AppUi -> ReadinessViewModel: Translate result payload into UI copy and sections
+  ReadinessViewModel --> AppUi: Main result card, weather signals, seasonal evidence, species fit, and disclaimer
+  AppUi --> User: Show result, confidence, limitations, and details sections
 else Inputs are partial or missing
   ReadinessService --> ReadinessRoute: Low-confidence or unavailable result with missing-data reasons
   ReadinessRoute --> AppUi: Result payload with limitations
+  AppUi -> ReadinessViewModel: Translate degraded result into user-facing copy
+  ReadinessViewModel --> AppUi: Low-confidence or unavailable result with disclaimer
   AppUi --> User: Show low-confidence or unavailable state
 end
 
@@ -60,8 +65,9 @@ Observation-backed seasonality is the primary path.
 If evidence is sparse or missing, the service falls back
 to static season months in the curated species catalog
 and lowers confidence.
-The readiness response exposes grouped seasonal evidence
-details for transparency in the UI.
+The readiness response feeds a UI-facing view model that
+translates limitations and explanation details into copy
+for the main result card and supporting sections.
 end note
 
 note right of SeasonalEvidenceCache

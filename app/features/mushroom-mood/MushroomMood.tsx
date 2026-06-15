@@ -1,8 +1,12 @@
 "use client";
 
-import React, { JSX, useState } from 'react';
+import React, { JSX, useRef, useState } from 'react';
 import { CURATED_SPECIES, SPECIES_ID_LIST, SpeciesId } from '../../../lib/data/mushroomSpecies';
-import { ReadinessResult, ReadinessLabel, SupportLevel, SeasonalState } from '../../../lib/services/mushroomReadinessService';
+import { ReadinessResult } from '../../../lib/services/mushroomReadinessService';
+import {
+  toReadinessResultViewModel,
+  ReadinessResultViewModel,
+} from '../../../lib/viewModels/readinessResultViewModel';
 
 const PRESET_SPOTS = [
   { label: 'Ullared, Sweden', lat: '57.1134', lon: '12.7732' },
@@ -10,48 +14,107 @@ const PRESET_SPOTS = [
   { label: 'Gothenburg', lat: '57.7089', lon: '11.9746' },
 ];
 
-const LABEL_STYLES: Record<ReadinessLabel, { bg: string; text: string; label: string }> = {
-  'very-likely-worth-checking': { bg: 'bg-emerald-700', text: 'text-white', label: 'Very likely worth checking' },
-  'worth-checking': { bg: 'bg-emerald-500', text: 'text-white', label: 'Worth checking' },
-  'possible-but-uncertain': { bg: 'bg-amber-400', text: 'text-amber-900', label: 'Possible but uncertain' },
-  'unlikely-now': { bg: 'bg-orange-400', text: 'text-white', label: 'Unlikely now' },
-  'very-unlikely-right-now': { bg: 'bg-red-500', text: 'text-white', label: 'Very unlikely right now' },
-  'unknown': { bg: 'bg-stone-400', text: 'text-white', label: 'Unknown' },
-};
+function ResultCard({ vm }: { vm: ReadinessResultViewModel }): JSX.Element {
+  return (
+    <section>
+      {/* Main result card */}
+      <div className={`rounded-lg p-5 mb-4 ${vm.readinessLabelStyle.bg}`}>
+        <p className={`text-xs uppercase tracking-wide font-semibold mb-1 opacity-80 ${vm.readinessLabelStyle.text}`}>
+          Readiness
+        </p>
+        <p className={`text-2xl font-bold mb-2 ${vm.readinessLabelStyle.text}`}>
+          {vm.readinessLabel}
+        </p>
+        <div className={`text-sm space-y-1 opacity-90 ${vm.readinessLabelStyle.text}`}>
+          <p><span className="opacity-70">Species: </span>{vm.speciesDisplay} · <span className="italic">{vm.speciesLatin}</span></p>
+          <p><span className="opacity-70">Spot: </span>{vm.spotDisplay}</p>
+          <p><span className="opacity-70">Checked: </span>{vm.checkedAt}</p>
+        </div>
+      </div>
 
-const SEASONAL_STATE_LABELS: Record<SeasonalState, { text: string; color: string }> = {
-  'in-season': { text: 'In season', color: 'text-emerald-700' },
-  'shoulder-season': { text: 'Shoulder season', color: 'text-amber-600' },
-  'out-of-season': { text: 'Out of season', color: 'text-red-600' },
-  'unknown': { text: 'Unknown', color: 'text-stone-500' },
-};
+      {/* Compact metrics */}
+      <div className="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-3">
+        <div className="bg-white border border-stone-200 rounded p-3">
+          <p className="text-xs text-stone-500 mb-1">Readiness score</p>
+          <p className="text-xl font-bold text-stone-800">{vm.readinessScore}</p>
+        </div>
+        <div className="bg-white border border-stone-200 rounded p-3">
+          <p className="text-xs text-stone-500 mb-1">Confidence</p>
+          <p className="text-sm font-semibold text-stone-800">{vm.confidenceDisplay}</p>
+          <p className="text-xs text-stone-400 mt-1">{vm.confidenceHelper}</p>
+        </div>
+        <div className="bg-white border border-stone-200 rounded p-3">
+          <p className="text-xs text-stone-500 mb-1">Seasonal timing</p>
+          <p className={`text-sm font-semibold ${vm.seasonalTimingColor}`}>{vm.seasonalTimingLabel}</p>
+        </div>
+      </div>
 
-const SUPPORT_LABELS: Record<SupportLevel, { text: string; color: string }> = {
-  'supported': { text: 'Supported', color: 'text-emerald-600' },
-  'partial': { text: 'Partial', color: 'text-amber-600' },
-  'missing': { text: 'Insufficient', color: 'text-red-600' },
-};
+      {/* Limitation banner */}
+      {vm.limitationBanner && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded mb-4">
+          <p className="text-sm font-semibold text-amber-800 mb-1">{vm.limitationBanner.title}</p>
+          <p className="text-sm text-amber-700">{vm.limitationBanner.body}</p>
+          {vm.limitationBanner.bullets.length > 0 && (
+            <ul className="mt-2 text-xs text-amber-700 space-y-1 list-disc list-inside">
+              {vm.limitationBanner.bullets.map((bullet, i) => (
+                <li key={i}>{bullet}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
-const EVIDENCE_QUALITY_LABELS = {
-  sufficient: { text: 'Sufficient', color: 'text-emerald-600' },
-  sparse: { text: 'Sparse', color: 'text-amber-600' },
-  missing: { text: 'Missing', color: 'text-red-600' },
-} as const;
+      {/* Details section */}
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-stone-700 mb-3">Why this result?</h3>
 
-function confidenceLabel(pct: number): string {
-  if (pct >= 70) return 'High';
-  if (pct >= 40) return 'Moderate';
-  return 'Low';
-}
+        {/* Weather signals */}
+        <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-2">Weather signals</h4>
+          <div className="space-y-2 text-sm text-stone-700">
+            <div>
+              <span className="text-stone-500 text-xs">Recent rain: </span>
+              {vm.weatherSignals.recentRain}
+            </div>
+            <div>
+              <span className="text-stone-500 text-xs">Moisture history: </span>
+              {vm.weatherSignals.moistureHistory}
+            </div>
+            <div>
+              <span className="text-stone-500 text-xs">Temperature: </span>
+              {vm.weatherSignals.temperature}
+            </div>
+            <div>
+              <span className="text-stone-500 text-xs">Weather history: </span>
+              {vm.weatherSignals.weatherHistory}
+            </div>
+          </div>
+        </div>
 
-function formatMeters(value: number | null): string {
-  if (value === null) return '—';
-  return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)} km`;
-}
+        {/* Seasonal evidence */}
+        <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-2">Seasonal evidence</h4>
+          <p className="text-sm text-stone-700">{vm.seasonalEvidence.sourceCopy}</p>
+        </div>
 
-function formatCount(value: number | null): string {
-  if (value === null) return '—';
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+        {/* Species fit */}
+        <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-2">Species fit</h4>
+          <p className="text-sm text-stone-700 mb-2">{vm.speciesFit.summary}</p>
+          <ul className="text-xs text-stone-500 space-y-1">
+            <li>{vm.speciesFit.typicalSeason}</li>
+            <li>{vm.speciesFit.temperatureRange}</li>
+            <li>{vm.speciesFit.rainSignal}</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Disclaimer */}
+      <div className="p-3 bg-stone-100 border border-stone-200 rounded text-xs text-stone-500 leading-relaxed">
+        {vm.disclaimer}
+      </div>
+    </section>
+  );
 }
 
 export default function MushroomMood(): JSX.Element {
@@ -62,41 +125,64 @@ export default function MushroomMood(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const canSubmit = latitude.trim() !== '' && longitude.trim() !== '' && !loading;
 
   async function checkReadiness(): Promise<void> {
     if (!canSubmit) return;
+
+    // Abort any in-flight request before starting a new one.
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setResult(null);
     setError(null);
 
     try {
       const url = `/api/mushroom-readiness?latitude=${encodeURIComponent(latitude)}&longitude=${encodeURIComponent(longitude)}&species=${speciesId}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: controller.signal });
       const body = await response.json();
 
       if (!response.ok) {
         throw new Error(body.error || `Request failed with status ${response.status}`);
       }
 
-      setResult(body as ReadinessResult);
+      // Only apply result if this request is still current (inputs may have changed).
+      if (abortControllerRef.current === controller) {
+        setResult(body as ReadinessResult);
+      }
     } catch (err) {
-      setError(err.message);
+      // Ignore aborted requests — the user changed inputs and a new request will follow.
+      if (err instanceof Error && err.name === 'AbortError') return;
+      if (abortControllerRef.current === controller) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
     } finally {
-      setLoading(false);
+      // Only clear loading if this controller is still the current one.
+      if (abortControllerRef.current === controller) {
+        setLoading(false);
+      }
     }
   }
 
   function applyPreset(lat: string, lon: string): void {
+    clearResultContext();
     setLatitude(lat);
     setLongitude(lon);
-    setResult(null);
-    setError(null);
   }
 
-  const labelStyle = result ? LABEL_STYLES[result.result.readinessLabel] : null;
-  const isInsufficient = result?.result.readinessLabel === 'unknown';
-  const seasonalEvidence = result?.explanation.seasonalEvidence;
+  function clearResultContext(): void {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setResult(null);
+    setError(null);
+    setLoading(false);
+  }
+
+  const vm = result ? toReadinessResultViewModel(result) : null;
 
   return (
     <div className="max-w-2xl mx-auto font-sans">
@@ -119,14 +205,14 @@ export default function MushroomMood(): JSX.Element {
             type="text"
             placeholder="Latitude"
             value={latitude}
-            onChange={(e) => setLatitude(e.target.value)}
+            onChange={(e) => { setLatitude(e.target.value); clearResultContext(); }}
             className="px-3 py-2 border border-stone-300 rounded w-36 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
           <input
             type="text"
             placeholder="Longitude"
             value={longitude}
-            onChange={(e) => setLongitude(e.target.value)}
+            onChange={(e) => { setLongitude(e.target.value); clearResultContext(); }}
             className="px-3 py-2 border border-stone-300 rounded w-36 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -142,7 +228,7 @@ export default function MushroomMood(): JSX.Element {
             return (
               <button
                 key={id}
-                onClick={() => setSpeciesId(id)}
+                onClick={() => { setSpeciesId(id); clearResultContext(); }}
                 className={`px-4 py-2 rounded border transition text-sm ${
                   selected
                     ? 'bg-emerald-600 text-white border-emerald-600'
@@ -179,164 +265,7 @@ export default function MushroomMood(): JSX.Element {
       )}
 
       {/* Result */}
-      {result && (
-        <section>
-          {/* Readiness label */}
-          <div className={`rounded-lg p-5 mb-4 ${labelStyle?.bg}`}>
-            <p className={`text-xs uppercase tracking-wide font-semibold mb-1 opacity-80 ${labelStyle?.text}`}>
-              Readiness
-            </p>
-            <p className={`text-2xl font-bold ${labelStyle?.text}`}>
-              {labelStyle?.label}
-            </p>
-            <p className={`text-sm mt-1 opacity-80 ${labelStyle?.text}`}>
-              {result.species.displayName} · {result.species.latinName}
-            </p>
-          </div>
-
-          {isInsufficient ? (
-            <>
-              <div className="p-4 bg-stone-100 rounded border border-stone-200 text-stone-600 text-sm mb-4">
-                <p className="font-semibold mb-1">Insufficient data</p>
-                <p>{result.explanation.summary}</p>
-              </div>
-
-              <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-4">
-                <h3 className="text-sm font-semibold text-stone-700 mb-3">Seasonal evidence</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Quality</p>
-                    <p className={`font-medium ${EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].color}`}>
-                      {EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].text}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Radius used</p>
-                    <p className="font-medium text-stone-700">{formatMeters(seasonalEvidence.radiusUsedMeters)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Lookback</p>
-                    <p className="font-medium text-stone-700">
-                      {seasonalEvidence.lookbackYearsUsed === null ? '—' : `${seasonalEvidence.lookbackYearsUsed} years`}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Raw observations</p>
-                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.rawObservationCount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Weighted observation score</p>
-                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.weightedObservationCount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Distinct years</p>
-                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.distinctObservationYears)}</p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Summary */}
-              <p className="text-stone-700 mb-4 text-sm leading-relaxed">
-                {result.explanation.summary}
-              </p>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-white border border-stone-200 rounded p-3 text-center">
-                  <p className="text-xs text-stone-500 mb-1">Probability</p>
-                  <p className="text-2xl font-bold text-stone-800">
-                    {result.result.probabilityPercent ?? '—'}
-                    {result.result.probabilityPercent !== null && (
-                      <span className="text-base font-normal">%</span>
-                    )}
-                  </p>
-                </div>
-                <div className="bg-white border border-stone-200 rounded p-3 text-center">
-                  <p className="text-xs text-stone-500 mb-1">Confidence</p>
-                  <p className="text-2xl font-bold text-stone-800">
-                    {result.result.confidencePercent}
-                    <span className="text-base font-normal">%</span>
-                  </p>
-                  <p className="text-xs text-stone-400">
-                    {confidenceLabel(result.result.confidencePercent)}
-                  </p>
-                </div>
-                <div className="bg-white border border-stone-200 rounded p-3 text-center">
-                  <p className="text-xs text-stone-500 mb-1">Season</p>
-                  <p className={`text-sm font-semibold ${SEASONAL_STATE_LABELS[result.result.seasonalState].color}`}>
-                    {SEASONAL_STATE_LABELS[result.result.seasonalState].text}
-                  </p>
-                </div>
-              </div>
-
-              {/* Factor breakdown */}
-              <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-4">
-                <h3 className="text-sm font-semibold text-stone-700 mb-3">Factors</h3>
-                <div className="space-y-2 text-sm">
-                  {(
-                    [
-                      ['Weather', result.explanation.weatherSupport],
-                      ['Seasonal', result.explanation.seasonalSupport],
-                    ] as [string, SupportLevel][]
-                  ).map(([label, support]) => (
-                    <div key={label} className="flex justify-between">
-                      <span className="text-stone-600">{label}</span>
-                      <span className={`font-medium ${SUPPORT_LABELS[support].color}`}>
-                        {SUPPORT_LABELS[support].text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-stone-50 border border-stone-200 rounded p-4 mb-4">
-                <h3 className="text-sm font-semibold text-stone-700 mb-3">Seasonal evidence</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Quality</p>
-                    <p className={`font-medium ${EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].color}`}>
-                      {EVIDENCE_QUALITY_LABELS[seasonalEvidence.quality].text}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Radius used</p>
-                    <p className="font-medium text-stone-700">{formatMeters(seasonalEvidence.radiusUsedMeters)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Lookback</p>
-                    <p className="font-medium text-stone-700">
-                      {seasonalEvidence.lookbackYearsUsed === null ? '—' : `${seasonalEvidence.lookbackYearsUsed} years`}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Raw observations</p>
-                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.rawObservationCount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Weighted observation score</p>
-                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.weightedObservationCount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Distinct years</p>
-                    <p className="font-medium text-stone-700">{formatCount(seasonalEvidence.distinctObservationYears)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Limitations */}
-              {result.limitations.length > 0 && (
-                <div className="text-xs text-stone-500 space-y-1">
-                  {result.limitations.map((lim) => (
-                    <p key={lim}>Note: {lim.replace(/-/g, ' ')}</p>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </section>
-      )}
+      {vm && <ResultCard vm={vm} />}
     </div>
   );
 }

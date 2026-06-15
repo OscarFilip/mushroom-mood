@@ -26,6 +26,7 @@ export type SupportLevel = 'supported' | 'partial' | 'missing';
 
 export interface SeasonalEvidenceSummary {
   quality: 'sufficient' | 'sparse' | 'missing';
+  source: 'observation-backed' | 'species-calendar';
   radiusUsedMeters: number | null;
   lookbackYearsUsed: number | null;
   rawObservationCount: number | null;
@@ -33,7 +34,19 @@ export interface SeasonalEvidenceSummary {
   distinctObservationYears: number | null;
 }
 
+export interface WeatherEvidence {
+  rain3DayMm: number;
+  rain7DayMm: number;
+  rain14DayMm: number;
+  rain30DayMm: number;
+  rainHistoryDays: number;
+  averageTemperature7DayC: number | null;
+  rainStationName: string | null;
+  temperatureStationName: string | null;
+}
+
 export interface ReadinessResult {
+  checkedAt: string;
   spot: { latitude: number; longitude: number };
   species: { id: SpeciesId; displayName: string; latinName: string };
   result: {
@@ -48,6 +61,7 @@ export interface ReadinessResult {
     seasonalSupport: SupportLevel;
     seasonalEvidence: SeasonalEvidenceSummary;
   };
+  weatherEvidence: WeatherEvidence | null;
   limitations: string[];
 }
 
@@ -141,7 +155,7 @@ export async function getMushroomReadiness(
     });
     return buildUnknownResult(latitude, longitude, species, seasonalObsResult, [
       'weather-data-unavailable',
-    ]);
+    ], now);
   }
 
   const rainWindows = computeRainWindows(rainMeasurements, now);
@@ -219,7 +233,12 @@ export async function getMushroomReadiness(
     },
   });
 
+  const evidenceSource: 'observation-backed' | 'species-calendar' = observationBacked
+    ? 'observation-backed'
+    : 'species-calendar';
+
   return {
+    checkedAt: now.toISOString(),
     spot: { latitude, longitude },
     species: {
       id: speciesId,
@@ -236,15 +255,29 @@ export async function getMushroomReadiness(
       summary: buildSummary(readinessLabel, seasonalState, weatherSupport, species),
       weatherSupport,
       seasonalSupport,
-      seasonalEvidence: buildSeasonalEvidenceSummary(seasonalObsResult),
+      seasonalEvidence: buildSeasonalEvidenceSummary(seasonalObsResult, evidenceSource),
+    },
+    weatherEvidence: {
+      rain3DayMm: rainWindows.rain3Day,
+      rain7DayMm: rainWindows.rain7Day,
+      rain14DayMm: rainWindows.rain14Day,
+      rain30DayMm: rainWindows.rain30Day,
+      rainHistoryDays: rainWindows.dayCount,
+      averageTemperature7DayC: avgTemp,
+      rainStationName: weatherData.rainStation?.name ?? null,
+      temperatureStationName: weatherData.temperatureStation?.name ?? null,
     },
     limitations,
   };
 }
 
-function buildSeasonalEvidenceSummary(result: SeasonalObservationResult): SeasonalEvidenceSummary {
+function buildSeasonalEvidenceSummary(
+  result: SeasonalObservationResult,
+  source: 'observation-backed' | 'species-calendar',
+): SeasonalEvidenceSummary {
   return {
     quality: result.evidenceQuality,
+    source,
     radiusUsedMeters: result.radiusUsedMeters,
     lookbackYearsUsed: result.lookbackYearsUsed,
     rawObservationCount: result.rawObservationCount,
@@ -434,8 +467,16 @@ function buildUnknownResult(
   species: MushroomSpeciesProfile,
   seasonalObsResult: SeasonalObservationResult,
   limitations: string[],
+  now: Date,
 ): ReadinessResult {
+  const evidenceSource: 'observation-backed' | 'species-calendar' =
+    seasonalObsResult.evidenceQuality === 'sufficient' &&
+    seasonalObsResult.seasonalityScore !== null
+      ? 'observation-backed'
+      : 'species-calendar';
+
   return {
+    checkedAt: now.toISOString(),
     spot: { latitude, longitude },
     species: {
       id: species.id,
@@ -452,8 +493,9 @@ function buildUnknownResult(
       summary: 'Insufficient data to assess readiness for this spot.',
       weatherSupport: 'missing',
       seasonalSupport: 'missing',
-      seasonalEvidence: buildSeasonalEvidenceSummary(seasonalObsResult),
+      seasonalEvidence: buildSeasonalEvidenceSummary(seasonalObsResult, evidenceSource),
     },
+    weatherEvidence: null,
     limitations,
   };
 }
