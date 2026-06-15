@@ -1,4 +1,4 @@
-@startuml feature-mushroom-probability
+@startuml mushroom-probability
 title Mushroom Probability Detail Feature Flow
 
 ' Purpose: Show the current implemented explanation transparency flow after a user opens a mushroom detail view.

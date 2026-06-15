@@ -1,4 +1,4 @@
-@startuml feature-account-page-target
+@startuml account-page
 title Account Page Target Feature Flow
 
 ' Purpose: Show the planned account-area flow for a later account feature slice.

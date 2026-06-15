@@ -1,4 +1,4 @@
-@startuml feature-beta-access-control-target
+@startuml beta-access-control
 title Beta Access Control Target Feature Flow
 
 ' Purpose: Show the planned user-visible beta journey after feedback submission is exposed in the UI.

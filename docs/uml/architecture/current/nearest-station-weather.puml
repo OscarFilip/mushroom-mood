@@ -1,4 +1,4 @@
-@startuml architecture-nearest-station-weather
+@startuml nearest-station-weather
 title Nearest Station Weather Architecture Flow
 
 actor User

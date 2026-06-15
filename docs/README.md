@@ -20,10 +20,11 @@ Current source layout:
 
 ## Diagram file names
 
-- Use `feature-<name>.puml` for current implemented product or user flows.
-- Use `feature-<name>-target.puml` for planned or in-progress product or user flows.
-- Use `architecture-<name>.puml` for current-state architecture diagrams.
-- Use `architecture-<name>-target.puml` for planned or in-progress architecture diagrams.
+- Put implemented feature flows in `docs/uml/feature/current/<name>.puml`.
+- Put planned or in-progress feature flows in `docs/uml/feature/target/<name>.puml`.
+- Put implemented architecture diagrams in `docs/uml/architecture/current/<name>.puml`.
+- Put planned or in-progress architecture diagrams in `docs/uml/architecture/target/<name>.puml`.
+- Keep each `@startuml` id aligned with the `.puml` basename.
 - Keep each diagram focused on one feature or subsystem.
 
 ## Diagram lifecycle
@@ -41,8 +42,8 @@ Current source layout:
 
 ## Feature-flow status rules
 
-- Keep `feature-<name>.puml` limited to user-visible behavior that is implemented now.
-- Put planned or materially different future user-visible behavior in `feature-<name>-target.puml`.
+- Keep files under `docs/uml/feature/current/` limited to user-visible behavior that is implemented now.
+- Put planned or materially different future user-visible behavior under `docs/uml/feature/target/`.
 - Do not mix current and future behavior in one feature-flow file when the difference matters for review or planning.
 - Use `docs/feature-flows.md` as the index that links current and target feature-flow diagrams.
 
@@ -52,6 +53,12 @@ Current source layout:
 2. Preview it in VS Code.
 3. Update the matching markdown page in `docs/` and embed the generated SVG from `docs/uml/out/`.
 4. Push to `main` and let GitHub Actions regenerate the SVG output.
+
+## Rendered SVG naming
+
+- Keep the `@startuml` id aligned with the `.puml` basename so the generated SVG name stays predictable.
+- Current and target diagrams can safely share the same basename because they render into different output folders.
+- When renaming a diagram source file, regenerate the matching SVG under `docs/uml/out/` and keep the markdown link aligned.
 
 ## Working with agents
 

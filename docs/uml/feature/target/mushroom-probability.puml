@@ -1,4 +1,4 @@
-@startuml feature-mushroom-probability-target
+@startuml mushroom-probability
 title Mushroom Probability Detail Target Feature Flow
 
 ' Purpose: Show the later planned contributor and admin flow that builds on the current explanation transparency path.

@@ -1,4 +1,4 @@
-@startuml architecture-nearest-station-weather-target
+@startuml nearest-station-weather
 title Nearest Station Weather Target Architecture Flow
 
 ' note top of diagram

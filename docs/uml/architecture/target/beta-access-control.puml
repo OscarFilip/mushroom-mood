@@ -1,4 +1,4 @@
-@startuml architecture-beta-access-control-target
+@startuml beta-access-control
 title Beta Access Control Target Architecture
 
 ' Purpose: Show future beta access-control architecture differences beyond the implemented boundary.

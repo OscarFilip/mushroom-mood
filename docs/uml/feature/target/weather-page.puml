@@ -1,4 +1,4 @@
-@startuml feature-weather-page-target
+@startuml weather-page
 title Weather Page Target Feature Flow
 
 ' Purpose: Show the planned deeper evidence view for weather and seasonal inputs.
