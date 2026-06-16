@@ -31,13 +31,13 @@ Rendered SVG after diagram generation: `./uml/out/feature/current/beta-access-co
 
 Source: [beta-access-control.puml](./uml/feature/current/beta-access-control.puml)
 
-### Mushroom probability detail
+### Readiness result clarity
 
-This diagram shows the current implemented explanation transparency flow after a user opens a mushroom detail or readiness explanation.
+This diagram shows the current implemented readiness-result clarity flow after a user chooses a spot and species and sees the main result card plus supporting detail sections.
 
 Rendered SVG: `./uml/out/feature/current/mushroom-probability.svg`
 
-![Mushroom probability detail flow](./uml/out/feature/current/mushroom-probability.svg)
+![Readiness result clarity feature flow](./uml/out/feature/current/mushroom-probability.svg)
 
 Source: [mushroom-probability.puml](./uml/feature/current/mushroom-probability.puml)
 

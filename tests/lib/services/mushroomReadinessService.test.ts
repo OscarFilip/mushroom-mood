@@ -132,6 +132,43 @@ describe('getMushroomReadiness', () => {
     expect(result.explanation.seasonalEvidence).toBeDefined();
   });
 
+  it('reports observation-backed seasonal source when no rain but sufficient seasonal evidence', async () => {
+    mockGetHistoricalWeatherData.mockResolvedValue({
+      rainStation: null,
+      temperatureStation: null,
+    });
+
+    const sufficientDeps: ReadinessServiceDeps = {
+      seasonalRepo: makeSufficientSeasonalRepo(80),
+      now: FIXED_NOW,
+    };
+
+    const result = await getMushroomReadiness(57.1134, 12.7732, 'cantharellus-cibarius', sufficientDeps);
+
+    expect(result.result.readinessLabel).toBe('unknown');
+    expect(result.limitations).toContain('weather-data-unavailable');
+    expect(result.explanation.seasonalEvidence.source).toBe('observation-backed');
+    expect(result.explanation.seasonalEvidence.quality).toBe('sufficient');
+  });
+
+  it('reports species-calendar seasonal source when no rain and sparse seasonal evidence', async () => {
+    mockGetHistoricalWeatherData.mockResolvedValue({
+      rainStation: null,
+      temperatureStation: null,
+    });
+
+    const sparseDeps: ReadinessServiceDeps = {
+      seasonalRepo: makeSparseSeasonalRepo(),
+      now: FIXED_NOW,
+    };
+
+    const result = await getMushroomReadiness(57.1134, 12.7732, 'cantharellus-cibarius', sparseDeps);
+
+    expect(result.result.readinessLabel).toBe('unknown');
+    expect(result.limitations).toContain('weather-data-unavailable');
+    expect(result.explanation.seasonalEvidence.source).toBe('species-calendar');
+  });
+
   it('returns very-unlikely-right-now for out-of-season species regardless of weather', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-04-15T12:00:00Z'));
     try {
@@ -478,6 +515,141 @@ describe('getMushroomReadiness', () => {
       });
 
       expect(result.result.seasonalState).toBe('shoulder-season');
+    });
+
+    it('sets seasonalEvidence.source to observation-backed when sufficient observation evidence is used', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(30, 5) },
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeSufficientSeasonalRepo(80),
+        now: FIXED_NOW,
+      });
+
+      expect(result.explanation.seasonalEvidence.source).toBe('observation-backed');
+    });
+
+    it('sets seasonalEvidence.source to species-calendar when sparse evidence falls back to calendar', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(30, 5) },
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeSparseSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.explanation.seasonalEvidence.source).toBe('species-calendar');
+    });
+
+    it('sets seasonalEvidence.source to species-calendar when missing evidence falls back to calendar', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(30, 5) },
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.explanation.seasonalEvidence.source).toBe('species-calendar');
+    });
+  });
+
+  describe('checkedAt and weatherEvidence fields', () => {
+    it('returns checkedAt as the injected now time in ISO format', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(30, 5) },
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.checkedAt).toBe(FIXED_NOW.toISOString());
+    });
+
+    it('returns checkedAt as ISO string even for unknown result (no rain data)', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: null,
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.checkedAt).toBe(FIXED_NOW.toISOString());
+      expect(result.result.readinessLabel).toBe('unknown');
+    });
+
+    it('returns weatherEvidence with rain windows and history days', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(20, 3) },
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.weatherEvidence).not.toBeNull();
+      expect(result.weatherEvidence!.rainHistoryDays).toBe(20);
+      expect(result.weatherEvidence!.rain7DayMm).toBeCloseTo(7 * 3);
+      expect(result.weatherEvidence!.rain14DayMm).toBeCloseTo(14 * 3);
+      expect(result.weatherEvidence!.averageTemperature7DayC).toBeNull();
+    });
+
+    it('returns weatherEvidence with averageTemperature7DayC when temp data is available', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { rainFallMeasurements: makeRainMeasurements(30, 3) },
+        temperatureStation: { temperatureMeasurements: makeTempMeasurements(14, 18) },
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.weatherEvidence).not.toBeNull();
+      expect(result.weatherEvidence!.averageTemperature7DayC).toBeCloseTo(18);
+    });
+
+    it('returns weatherEvidence with station names when available', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: { name: 'Ullared Station', rainFallMeasurements: makeRainMeasurements(30, 3) },
+        temperatureStation: { name: 'Göteborg Station', temperatureMeasurements: makeTempMeasurements(14, 16) },
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.weatherEvidence!.rainStationName).toBe('Ullared Station');
+      expect(result.weatherEvidence!.temperatureStationName).toBe('Göteborg Station');
+    });
+
+    it('returns weatherEvidence null when no rain data (unknown result)', async () => {
+      mockGetHistoricalWeatherData.mockResolvedValue({
+        rainStation: null,
+        temperatureStation: null,
+      });
+
+      const result = await getMushroomReadiness(57.1134, 12.7732, 'boletus-edulis', {
+        seasonalRepo: makeMissingSeasonalRepo(),
+        now: FIXED_NOW,
+      });
+
+      expect(result.weatherEvidence).toBeNull();
     });
   });
 });

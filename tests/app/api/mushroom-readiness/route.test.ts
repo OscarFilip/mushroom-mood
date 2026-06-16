@@ -26,6 +26,7 @@ const mockIsBetaAllowed = isBetaAllowed as jest.Mock;
 const mockGetMushroomReadiness = getMushroomReadiness as jest.Mock;
 
 const VALID_RESULT = {
+  checkedAt: '2026-09-15T12:00:00.000Z',
   spot: { latitude: 57.1134, longitude: 12.7732 },
   species: { id: 'cantharellus-cibarius', displayName: 'Golden Chanterelle', latinName: 'Cantharellus cibarius' },
   result: {
@@ -40,12 +41,23 @@ const VALID_RESULT = {
     seasonalSupport: 'missing',
     seasonalEvidence: {
       quality: 'missing',
+      source: 'species-calendar',
       radiusUsedMeters: null,
       lookbackYearsUsed: null,
       rawObservationCount: null,
       weightedObservationCount: null,
       distinctObservationYears: null,
     },
+  },
+  weatherEvidence: {
+    rain3DayMm: 6,
+    rain7DayMm: 14,
+    rain14DayMm: 28,
+    rain30DayMm: 45,
+    rainHistoryDays: 30,
+    averageTemperature7DayC: 16,
+    rainStationName: null,
+    temperatureStationName: null,
   },
   limitations: [],
 };

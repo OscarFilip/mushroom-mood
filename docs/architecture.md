@@ -49,7 +49,7 @@ Source: [nearest-station-weather.puml](./uml/architecture/target/nearest-station
 
 ### Current-state Mushroom Mood
 
-This diagram shows the implemented architecture for the current spot-check slice. It covers the UI, readiness route, readiness service, curated in-repo species rules, SMHI-backed weather history flow, the seasonal observation repository, the current in-memory seasonal evidence cache, and the static-calendar fallback that exists in code now.
+This diagram shows the implemented architecture for the current readiness-result-clarity slice. It covers the UI, the UI-facing result view model, the readiness route, readiness service, curated in-repo species rules, SMHI-backed weather history flow, the seasonal observation repository, the current in-memory seasonal evidence cache, and the static-calendar fallback that exists in code now.
 
 Rendered SVG: `./uml/out/architecture/current/mushroom-mood.svg`
 
