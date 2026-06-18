@@ -1,20 +1,8 @@
 # Seasonal Observation Policy
 
-## Purpose
+This document defines the policy for observation-backed seasonality in Mushroom Mood.
 
-This document defines the first stable planning policy for observation-backed seasonality in Mushroom Mood.
-
-It covers:
-
-- observation source
-- runtime versus admin-only external API concerns
-- radius ladder and fallback order
-- lookback window
-- freshness and cache persistence direction
-- verification and dataset weighting
-- seasonal scoring shape
-- degraded behavior and confidence impact
-- known limitations
+It exists so seasonal scoring stays explainable, testable, and safe to degrade when data is sparse or unavailable.
 
 ## External API boundaries
 
@@ -44,29 +32,22 @@ Normal readiness requests must not depend on taxon search.
 
 ## Identity policy
 
-- Supported species store ArtDatabanken taxon IDs in the curated species catalog.
-- Runtime readiness reads the stored taxon ID and goes straight to observation search.
-- Restricted onboarding resolves and confirms taxon identity before a species is added to the catalog.
+- Supported species store ArtDatabanken taxon IDs in the curated catalog.
+- Runtime readiness reads the stored taxon ID and goes directly to observation search.
+- Restricted onboarding resolves and confirms taxon identity before a species is added.
 
 ## Search policy
 
 ### Radius ladder
 
-Use this radius ladder for the first slice:
+Use this order:
 
-- `3 km` primary lookup
-- `5 km` first sparse-data fallback
-- `10 km` second sparse-data fallback
-- `15 km` hard cap fallback for the first slice
+1. `3 km`
+2. `5 km`
+3. `10 km`
+4. `15 km`
 
-### Lookback window
-
-- Primary lookback: `10 years`
-- Fallback lookback after the radius ladder is exhausted: `15 years`
-
-### Fallback order
-
-Widen radius before widening the year span.
+`15 km` is the current hard cap.
 
 Reason:
 
@@ -76,21 +57,22 @@ Reason:
 - `15 km` returned `20` observations, with `16` in the last `10` years.
 - Extending time alone would have added little at `10 km`, because most additional records were much older and did not materially improve the current seasonal signal.
 
-For the first slice, this means the fallback order should be:
+### Lookback window
 
-1. `3 km`
-2. `5 km`
-3. `10 km`
-4. `15 km`
-5. If evidence is still sparse, extend the lookback to `15 years`
+- Primary lookback: `10 years`
+- Sparse-data fallback: `15 years`
+
+Widen radius before widening lookback.
+
+Reason: in the Ullared `Boletus edulis` probe, widening radius improved the evidence more than extending time alone.
 
 ## Freshness policy
 
 - Cache processed seasonal evidence, not raw observation payloads.
 - Default TTL: `24 hours`.
-- If refresh fails, allow stale-if-error reuse for up to `7 days` and attach a limitation indicating that stale cache was used.
-- The long-run architectural target is a persistent derived-evidence cache behind the repository boundary.
-- An in-memory cache is acceptable only as a first implementation shortcut for a small single-instance rollout.
+- If refresh fails, stale-if-error reuse is allowed for up to `7 days`.
+- Attach a limitation when stale cache is used.
+- Long term, move from in-memory cache to a persistent derived-evidence cache.
 
 Reason:
 
@@ -100,115 +82,82 @@ Reason:
 
 ## Quality policy
 
-### Verification weighting
+Per-record verification weights:
 
-Use these per-record weights:
+| Observation quality | Weight |
+| --- | ---: |
+| verified and not uncertain | `1.0` |
+| not verified and not uncertain | `0.6` |
+| uncertain identification | `0.2` |
 
-- verified and not uncertain: `1.0`
-- not verified and not uncertain: `0.6`
-- uncertain identification: `0.2`
+Dataset weights:
 
-### Dataset policy
+| Dataset | Weight |
+| --- | ---: |
+| Artportalen | `1.0` |
+| iNaturalist | `0.9` |
 
-Use an allowlist, with Artportalen as the default trusted source.
+Artportalen remains the primary trusted source. iNaturalist is included because it can improve sparse-area coverage.
 
-Initial approved datasets for the first slice:
+## Seasonal scoring
 
-- `Artportalen`
-- `iNaturalist`
-
-Initial dataset weights:
-
-- `Artportalen`: `1.0`
-- `iNaturalist`: `0.9`
-
-Reason:
-
-- Artportalen remains the primary trusted source.
-- The live Ullared probe showed that `iNaturalist` materially improved sparse-area coverage at `10 km` and `15 km`.
-- The slight weight reduction keeps Artportalen primary without throwing away useful evidence.
-
-## Seasonal scoring model
-
-### Output
-
-The seasonal observation repository should produce a seasonality score from `0` to `100`.
+The repository produces a seasonality score from `0` to `100`.
 
 Interpretation:
 
-- `0` means no meaningful local seasonal support
-- `100` means today aligns with the locally observed peak season in the filtered historical evidence
+- `0`: no meaningful local seasonal support
+- `100`: today aligns with the local observed peak season in the filtered historical evidence
 
-### First-slice scoring shape
+Current scoring shape:
 
-Use a normalized circular day-of-year density curve rather than a fixed month calendar or a strict normal distribution.
-
-Recommended first model:
-
-1. Filter observations by taxon, radius, lookback window, and allowed datasets.
-2. Weight records by verification quality and dataset weight.
+1. Filter observations by taxon, radius, lookback window, and allowed dataset.
+2. Weight records by verification quality and dataset.
 3. Project each observation date onto day-of-year.
 4. Build a circular kernel-density curve with a `+/- 30 day` influence window.
 5. Evaluate today's day-of-year against that curve.
 6. Normalize the highest curve value in the filtered evidence to `100`.
 7. Return today's normalized value as the seasonal score.
 
-This keeps the model local and seasonal without assuming the season is perfectly symmetric.
+Initial state thresholds:
 
-### Initial state thresholds
-
-Use these draft thresholds for the first slice:
-
-- `65-100`: `in-season`
-- `35-64`: `shoulder-season`
-- `0-34`: `out-of-season`
+| Score | State |
+| ---: | --- |
+| `65-100` | `in-season` |
+| `35-64` | `shoulder-season` |
+| `0-34` | `out-of-season` |
 
 These thresholds are implementation defaults, not final biological claims.
 
+## Evidence sufficiency
+
+Classify evidence after dataset filtering, verification weighting, radius selection, and lookback selection.
+
+| State | Rule |
+| --- | --- |
+| `missing` | no allowed observations |
+| `sparse` | some observations exist, but thresholds below are not met |
+| `sufficient` | all thresholds below are met |
+
+Sufficient evidence requires:
+
+- weighted observation count at least `4.0`
+- observations from at least `3` distinct years
+- observations from at least `2` distinct years within the base `10-year` lookback
+
+Sparse evidence should not be presented as robust local seasonality.
+
 ## Degraded behavior
 
-- If no allowed observations are found even after the full radius ladder, return missing seasonal evidence and fall back to the static species calendar for the seasonal contribution.
-- If observations exist but remain sparse after the full radius ladder, widen the lookback to `15 years` before giving up.
-- If evidence is still too sparse for a stable seasonal score after the widened lookback, fall back to the static species calendar rather than presenting the sparse observation score as robust.
-- If the external lookup fails but a stale cached result exists inside the reuse window, return the stale processed evidence with a freshness limitation.
-- If the external lookup fails and no usable cached result exists, fall back to the static species calendar and attach an availability limitation.
+When evidence is weak or unavailable:
 
-The readiness response should still expose `explanation.seasonalEvidence` on fallback so the UI can show whether the seasonal result came from sufficient observations, sparse observations, missing observations, or stale cache.
+- widen radius before widening lookback
+- fall back to the static species calendar when evidence stays too sparse
+- reuse stale processed evidence when allowed and clearly mark it
+- fall back safely when the external lookup fails and no usable cache exists
 
-## Evidence sufficiency thresholds
+The readiness response should expose seasonal evidence status so the UI can explain whether the result came from sufficient observations, sparse observations, missing observations, or stale cache.
 
-The seasonal observation repository should classify evidence as `sufficient`, `sparse`, or `missing` deterministically.
-
-Evaluation should happen on the filtered and weighted observation set after dataset filtering, verification weighting, and the active radius and lookback policy have been applied.
-
-### `missing`
-
-Return `missing` when the filtered set contains `0` allowed observations.
-
-### `sparse`
-
-Return `sparse` when the filtered set contains at least one observation, but fails any of these thresholds:
-
-- weighted observation count is less than `4.0`
-- distinct observation years are fewer than `3`
-- distinct observation years within the base `10-year` lookback are fewer than `2`
-
-### `sufficient`
-
-Return `sufficient` when all of these are true:
-
-- weighted observation count is at least `4.0`
-- distinct observation years are at least `3`
-- distinct observation years within the base `10-year` lookback are at least `2`
-
-### Why these thresholds
-
-- They are simple enough to implement and test deterministically.
-- They avoid calling a tiny cluster of one-year or two-year sightings a stable seasonal signal.
-- They keep the live Ullared `Boletus edulis` case in the intended buckets: `3 km` is `missing`, `5 km` is `sparse`, and `10 km` is the first likely `sufficient` radius.
-- They measure both amount of evidence and spread across years, which is more defensible than raw count alone.
-
-Suggested limitation codes for the first slice:
+Suggested limitation codes:
 
 - `seasonal-evidence-unavailable`
 - `seasonal-evidence-sparse`
@@ -218,17 +167,17 @@ Suggested limitation codes for the first slice:
 
 ## Confidence impact
 
-Current implementation applies a simple confidence policy:
+Current implementation uses a simple confidence policy:
 
-- lower confidence by a fixed penalty when observation-backed seasonality cannot be used and the service falls back to the static species calendar
-- keep the current confidence model otherwise, even when the seasonal repository had to widen radius or lookback
-- surface stale cache reuse through limitations, but do not apply an additional stale-cache confidence penalty yet
+- lower confidence when observation-backed seasonality cannot be used and the service falls back to the static calendar
+- keep the current confidence model when radius or lookback is widened
+- surface stale cache through limitations, without an extra confidence penalty for now
 
-Finer-grained confidence tuning based on widened radius, widened lookback, dataset mix, or evidence composition remains a future refinement rather than part of the first stable implementation.
+Finer confidence tuning can come later.
 
 ## Known limitations
 
-- Observation density is not the same thing as true abundance.
-- Recorder behavior and popular sites can bias the curve.
-- A sparse rural area may need larger radii than a dense reporting area.
-- Testing strategy for time control and repository mocking is intentionally deferred to the next planning pass.
+- Observation density is not true abundance.
+- Recorder behavior and popular locations can bias the curve.
+- Sparse rural areas may need larger radii than dense reporting areas.
+- The model supports readiness explanation; it does not prove mushroom presence or safety.

@@ -1,70 +1,68 @@
-# Done And Testing
+# Done and Testing
 
-This note defines what done means in this project and the minimum test bar for each feature flow.
+This document defines what "done" means for Mushroom Mood and the minimum test bar for feature work.
 
 ## Definition of done
 
-A flow is done when all of these are true:
+A flow is done when:
 
-- The main user path works end to end.
-- Important error and empty states are handled.
-- Input validation is in place where the flow accepts user input.
-- The related feature-flow and architecture diagrams match the implementation.
-- Tests cover the important behavior in the flow.
-- `npm test` passes.
-- `npm run build` passes.
-- No obvious placeholder branches, commented-out production code, or known broken states remain in the flow.
+- the main user path works end to end
+- important error and empty states are handled
+- user input is validated
+- related docs and diagrams match the implementation
+- tests cover the important behavior
+- `npm test` passes
+- `npm run build` passes
+- no obvious placeholder branches, commented-out production code, or known broken states remain
 
-## Minimum test strategy
+## Test strategy
 
 Use a light test pyramid.
 
-### 1. Unit tests for pure logic
+### Unit tests
 
-Use unit tests when the behavior is fast, isolated, and easy to verify without wiring together multiple parts of the app.
-
-Typical cases:
+Use unit tests for fast, isolated behavior:
 
 - validation rules
-- calculations and comparisons
-- mapping or transformation logic
+- calculations
+- mapping and transformation logic
 - branching logic with clear inputs and outputs
 
-### 2. Integration tests for the main backend flow
+### Integration-style tests
 
-Use integration tests when the goal is to verify that multiple parts work together.
-
-Typical cases:
+Use integration-style tests when multiple parts need to work together:
 
 - route-to-service behavior
 - service-to-repository behavior
-- error handling across layer boundaries
-- flows that depend on mocked external APIs or persistence layers
+- mocked external API behavior
+- persistence boundaries
+- error handling across layers
 
-Each implemented flow should have at least:
+Each implemented backend flow should have at least:
 
-- one happy-path integration test
+- one happy-path test
 - one invalid-input test
-- one failure or empty-result test
+- one failure, empty-result, or degraded-state test
 
-### 3. End-to-end tests are optional for now
+### End-to-end tests
 
-End-to-end tests may come later.
+End-to-end tests are optional for now.
 
-For now, focus on strong unit tests and a small set of useful integration tests.
-## Access-control flow test strategy
+For the current beta stage, prioritize useful unit tests, integration-style tests, and manual deployed-environment smoke checks.
 
-For beta access-control work, the minimum test bar is higher than link-hiding or happy-path UI checks because access control is a server-side boundary.
+## Access-control test bar
 
-Each access-control slice should cover:
+Access control is a server-side boundary. Link hiding or happy-path UI checks are not enough.
 
-- allowlist parsing and normalized email comparison, including lowercase + trim behavior
+Access-control work should cover:
+
+- allowlist parsing and normalized email comparison
 - logged-out visitor rejection
 - authenticated but non-invited user rejection
-- invited beta user access to the main app flow
-- beta user without admin access rejected from restricted/admin checks
-- admin/restricted identity allowed through admin checks when a restricted surface exists
-- direct URL or direct API access behaving the same as UI navigation
-- feedback persistence tests when feedback storage is part of the slice
+- invited beta-user access
+- beta-user rejection from restricted/admin checks
+- admin/restricted access when a restricted surface exists
+- direct URL and direct API access
+- feedback persistence when feedback storage is part of the slice
 
-Manual deployed-environment checks are required before a beta access-control slice counts as beta-ready, because real Auth.js, Resend, Postgres, and validation identity configuration cannot be proven from local unit tests alone.
+Manual deployed-environment checks are required before access control counts as beta-ready, because Auth.js, Resend, Postgres, and deployment configuration cannot be fully proven by local unit tests.

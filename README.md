@@ -1,97 +1,80 @@
 # Mushroom Mood
 
-Mushroom Mood is a Next.js app for checking weather signals that help indicate when a mushroom spot is worth visiting.
+Mushroom Mood is a Next.js app for checking whether a mushroom spot looks worth visiting.
 
-**Weather signals for when your mushroom spot is worth checking.**
+It combines weather history, seasonal observation data, species rules, and confidence signals into one readiness result.
 
-[![Tests](https://github.com/OscarFilip/mushroom-mood/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/OscarFilip/mushroom-mood/actions/workflows/tests.yml)
+## Live app
 
-## Status
+- Production: [mushroommood.se](https://mushroommood.se)
+- Development/preview: [dev.mushroommood.se](https://dev.mushroommood.se)
 
-The app includes a working spot-check flow: choose a location and species, get a readiness result with probability, confidence, and seasonal state. Weather history data feeds the readiness calculation from SMHI.
+## Current status
+
+The app has a working beta-style spot-check flow:
+
+1. sign in through the beta gate
+2. choose a location and mushroom species
+3. get a readiness result with probability, confidence, seasonal state, and supporting evidence
+
+Mushroom Mood is experimental. It is not foraging safety, edibility, or medical advice.
+
+## What this repo shows
+
+- Next.js and TypeScript app structure
+- API routes with validation and auth checks
+- external API integration with SMHI and ArtDatabanken
+- mapping from third-party data into internal models
+- fallback behavior for sparse or unavailable data
+- database-backed auth and feedback foundations with Drizzle and Postgres
+- unit and integration-style tests with Jest
+- planning, decision, execution, and review docs for AI-assisted development
+
+## Tech stack
+
+- Next.js
+- TypeScript
+- Auth.js
+- Drizzle
+- Postgres / Neon
+- Jest
+- Vercel
+
+## Local development
+
+Install dependencies, set environment variables, run migrations, then start the app.
+
+```bash
+npm install
+npm run db:migrate
+npm run dev
+```
+
+Useful commands:
+
+```bash
+npm test
+npm run build
+npm run db:generate
+npm run db:migrate
+npm run db:studio
+```
+
+Required runtime config is documented in [deployment.md](./docs/deployment.md). Do not commit real secrets.
 
 ## Documentation
 
+Start here:
+
 - [Project docs](./docs/README.md)
-- [Feature flows](./docs/feature-flows.md)
 - [Architecture](./docs/architecture.md)
-- [Definition of done and testing](./docs/done-and-testing.md)
-
-## Deployment
-
-Deployment runs on Vercel.
-
-- Preview deployments are used for `dev` live testing.
-- `main` is reserved as the future beta baseline and is protected before app-level auth.
-- Vercel is the source of truth for deployment status.
-- [Deployment docs](./docs/deployment.md) contain the current deployment model, environment variable rules, rollback steps, and disable-beta procedure.
-
-## Development
-
-Start the app:
-
-```bash
-npm run db:migrate
-npm run dev
-```
-
-Neon-backed local database:
-
-```bash
-npm run db:migrate
-npm run dev
-```
-
-Schema workflow with Drizzle:
-
-```bash
-# After changing lib/db/schema.ts
-npm run db:generate
-npm run db:migrate
-```
-
-Quick disposable local sync:
-
-```bash
-npm run db:push
-```
-
-Set `DATABASE_URL` in `.env.local` to your local Neon database connection string before running the app or Drizzle commands.
-
-Logging modes:
-
-- Normal logging is the default. Just run `npm run dev`.
-- Debug logging shows the extra API and payload tracing logs.
-
-PowerShell examples:
-
-```powershell
-# Normal logging
-npm run dev
-
-# Debug logging for this PowerShell window
-$env:MUSHROOM_MOOD_LOG_LEVEL='debug'
-npm run dev
-
-# Turn debug logging off again in this PowerShell window
-Remove-Item Env:MUSHROOM_MOOD_LOG_LEVEL
-```
-
-Useful scripts:
-
-- `npm run db:generate`
-- `npm run db:migrate`
-- `npm run db:push`
-- `npm run db:studio`
-- `npm test`
-- `npm run test:watch`
-- `npm run test:coverage`
-- `npm run build`
+- [Feature flows](./docs/feature-flows.md)
+- [Deployment](./docs/deployment.md)
+- [Done and testing](./docs/done-and-testing.md)
+- [Test guide](./tests/README.md)
 
 ## Diagrams
 
-- PlantUML source files live in `docs/uml/`.
-- Generated SVG files live in `docs/uml/out/`.
-- `.puml` files are the source of truth.
-- Preview diagrams in VS Code with the PlantUML extension.
-- GitHub Actions regenerates SVG files on pushes to `main`.
+PlantUML source files live in `docs/uml/`. Generated SVG files live in `docs/uml/out/`.
+
+The `.puml` files are the source of truth. Generated SVGs are committed so the diagrams render in GitHub.
