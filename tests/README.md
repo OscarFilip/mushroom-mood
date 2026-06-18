@@ -1,269 +1,125 @@
-# Unit Testing Guide for C# Developers
+# Testing Guide
 
-This guide explains how testing works in this Next.js TypeScript project. It uses C#/.NET examples where that helps.
+This project uses Jest for unit and integration-style tests.
 
-## Folder structure
+The goal is to protect Mushroom Mood from misleading readiness results, broken integrations, and access-control regressions. For the overall definition of done and minimum test bar, see [Done and testing](../docs/done-and-testing.md).
 
-```text
-Project Root
-|-- lib/                    # Business logic under test
-|   |-- repositories/
-|   |-- services/
-|   `-- utils/
-|-- tests/                  # Test files
-|   |-- lib/
-|   |   |-- repositories/
-|   |   |   |-- weatherDataRepository.test.ts
-|   |   |   `-- apiClient.test.ts
-|   |   |-- services/
-|   |   `-- utils/
-|   |-- helpers/
-|   |   `-- testHelpers.ts  # Test helpers
-|   `-- setup.ts            # Global test setup
-|-- jest.config.js          # Test configuration
-`-- package.json            # Test scripts
-```
+## Commands
 
-## Framework comparison
-
-| C#/.NET | TypeScript/Jest | Purpose |
-|---------|-----------------|---------|
-| `[TestClass]` | `describe()` | Test class/group |
-| `[TestMethod]` | `it()` or `test()` | Individual test |
-| `[TestInitialize]` | `beforeEach()` | Setup before each test |
-| `[TestCleanup]` | `afterEach()` | Cleanup after each test |
-| `Assert.AreEqual()` | `expect().toBe()` | Assertions |
-| `[ExpectedException]` | `expect().toThrow()` | Exception testing |
-| Moq | `jest.fn()` | Mocking |
-
-## Running tests
-
-### Basic commands
 ```bash
-# Run all tests once
 npm test
-
-# Run tests in watch mode (re-runs on file changes)
 npm run test:watch
-
-# Run tests with coverage report
 npm run test:coverage
-
-# Run tests for CI/CD
 npm run test:ci
 ```
 
-### Run specific tests
+Run one area while developing:
+
 ```bash
-# Run tests matching a pattern
-npm test -- weatherDataRepository
-
-# Run tests in a specific file
+npm test -- apiClient
 npm test -- tests/lib/repositories/weatherDataRepository.test.ts
-
-# Run tests with specific name pattern
-npm test -- --testNamePattern="should return"
+npm test -- --testNamePattern="returns mapped weather data"
 ```
 
-## Test structure example
+## Test layout
 
-### TypeScript/Jest
-```typescript
-describe('WeatherDataRepository', () => {
-  let repository;
-
-  beforeEach(() => {
-    repository = new WeatherDataRepository();
-  });
-
-  it('should return weather station for valid coordinates', async () => {
-    // Arrange
-    const latitude = 40.7128;
-    const longitude = -74.0060;
-
-    // Act
-    const result = await repository.findNearestStation(latitude, longitude);
-
-    // Assert
-    expect(result).toBeDefined();
-    expect(result.id).toBe('STATION_001');
-  });
-});
+```text
+tests/
+  app/                 route and auth behavior
+  lib/                 services, repositories, models, utils
+  helpers/             shared test helpers
+  setup.ts             global test setup
 ```
 
-### C# equivalent
-```csharp
-[TestClass]
-public class WeatherDataRepositoryTests
-{
-    private WeatherDataRepository _repository;
+Keep new tests close to the behavior they protect. Add or update tests when implementation changes affect user-visible results, API responses, persistence, auth boundaries, external API handling, or confidence/readiness calculations.
 
-    [TestInitialize]
-    public void Setup()
-    {
-        _repository = new WeatherDataRepository();
-    }
+## Testing expectations
 
-    [TestMethod]
-    public async Task ShouldReturnWeatherStationForValidCoordinates()
-    {
-        // Arrange
-        var latitude = 40.7128;
-        var longitude = -74.0060;
+Use unit tests for isolated logic:
 
-        // Act
-        var result = await _repository.FindNearestStationAsync(latitude, longitude);
+- validation
+- calculations and branching logic
+- mapping and transformation
+- scoring and confidence logic
+- small model and view-model shaping
 
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual("STATION_001", result.Id);
-    }
-}
-```
+Use integration-style tests when behavior crosses a boundary:
 
-## Common Jest assertions
+- API route to service
+- service to repository
+- repository to mocked external API
+- auth guard to route response
+- repository to database boundary
 
-| Jest | C# Equivalent | Purpose |
-|------|---------------|---------|
-| `expect(value).toBe(expected)` | `Assert.AreEqual(expected, value)` | Exact equality |
-| `expect(value).toEqual(expected)` | `Assert.AreEqual(expected, value)` | Deep equality |
-| `expect(value).toBeDefined()` | `Assert.IsNotNull(value)` | Not null/undefined |
-| `expect(value).toBeNull()` | `Assert.IsNull(value)` | Is null |
-| `expect(array).toHaveLength(3)` | `Assert.AreEqual(3, array.Length)` | Array/collection length |
-| `expect(obj).toHaveProperty('name')` | `Assert.IsTrue(obj.HasProperty("name"))` | Object has property |
-| `expect(() => func()).toThrow()` | `Assert.ThrowsException<T>(() => func())` | Exception testing |
+Each implemented backend flow should usually have:
 
-## Mocking
+- one happy-path test
+- one invalid-input test
+- one failure, empty-result, or degraded-state test
 
-### TypeScript/Jest
-```typescript
-it('should call external API', async () => {
-  // Arrange
-  const mockFetch = jest.fn().mockResolvedValue({
-    json: () => Promise.resolve({ id: 'TEST' })
-  });
-  global.fetch = mockFetch;
+Coverage is useful, but it is not the goal by itself. Prefer tests that prove meaningful product behavior over tests that only execute lines.
 
-  // Act
-  await repository.findNearestStation(40, -74);
+## Project coverage priorities
 
-  // Assert
-  expect(mockFetch).toHaveBeenCalledWith('https://api.example.com/...');
-});
-```
+Prioritize tests around:
 
-### C# with Moq
-```csharp
-[TestMethod]
-public async Task ShouldCallExternalApi()
-{
-    // Arrange
-    var mockHttpClient = new Mock<IHttpClient>();
-    mockHttpClient.Setup(x => x.GetAsync(It.IsAny<string>()))
-              .ReturnsAsync(new HttpResponseMessage { Content = ... });
+- request validation
+- auth and allowlist behavior
+- direct API and direct URL access boundaries
+- external API error handling
+- retry and no-retry behavior in the API client
+- SMHI weather data parsing and mapping
+- ArtDatabanken observation mapping, caching, fallback, and stale-if-error behavior
+- readiness score, confidence, evidence, and limitations
+- feedback persistence behavior
 
-    // Act
-    await repository.FindNearestStationAsync(40, -74);
+## Mocking boundaries
 
-    // Assert
-    mockHttpClient.Verify(x => x.GetAsync("https://api.example.com/..."), Times.Once);
-}
-```
+External services should be mocked. Tests must not depend on live SMHI, ArtDatabanken, email, Auth.js provider, or deployed database availability unless a task explicitly calls for a manual deployed-environment check.
 
-## Coverage reports
+Mock at the boundary that keeps the test focused. Repository tests can mock `fetch`; service tests can mock repositories; route tests can mock auth and service behavior. Reset mocks between tests.
 
-After running `npm run test:coverage`, you'll see:
+Assert the behavior that matters to the app, not incidental implementation details that make refactoring harder.
 
-```
----------------------------------|---------|----------|---------|---------|-------------------
-File                             | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
----------------------------------|---------|----------|---------|---------|-------------------
-weatherDataRepository.ts        |     100 |      100 |     100 |     100 | 
-```
+## AI agent guidance
 
-- **% Stmts**: Statement coverage
-- **% Branch**: Branch coverage (if/else)
-- **% Funcs**: Function coverage
-- **% Lines**: Line coverage
+When adding or changing tests, agents should:
 
-## Test helpers and utilities
+- read nearby tests before choosing a pattern
+- keep tests scoped to the behavior changed by the task
+- prefer behavior-focused test names and assertions
+- avoid live network calls and live secrets
+- reset mocks and module state between tests when needed
+- freeze system time for month-sensitive or season-sensitive behavior
+- cover degraded external responses, sparse data, and unexpected response shapes
+- update tests alongside implementation changes instead of leaving TODO coverage notes
+- run focused tests first, then the broader suite when the change has meaningful risk
 
-Use the helper functions in `tests/helpers/testHelpers.ts`:
+Do not add broad snapshot tests or coverage-only assertions unless they protect a stable contract. Do not introduce new test dependencies without recording the reason in the relevant decision log for non-trivial work.
+
+## Test helpers
+
+Use helpers from [testHelpers.ts](./helpers/testHelpers.ts) when they make setup clearer and keep fixtures consistent.
 
 ```typescript
 import { createMockWeatherStation, testCoordinates } from '@/tests/helpers/testHelpers';
 
-it('should handle mock data', () => {
+it('uses shared weather-station fixtures', () => {
   const station = createMockWeatherStation({ name: 'Test Station' });
   const coords = testCoordinates.newYork;
-  
+
   expect(station.name).toBe('Test Station');
+  expect(coords).toMatchObject({ latitude: expect.any(Number), longitude: expect.any(Number) });
 });
 ```
 
-## Best practices
+## Debugging failed tests
 
-### 1. Test organization
-- Group related tests in `describe()` blocks
-- Use descriptive test names
-- Follow AAA pattern (Arrange, Act, Assert)
+Use focused runs first:
 
-### 2. Test data
-- Use test helpers for creating mock data
-- Keep test data close to the test
-- Use meaningful test values
-
-### 3. Async testing
-```typescript
-// Good - properly handle async
-it('should handle async operations', async () => {
-  const result = await repository.findNearestStation(40, -74);
-  expect(result).toBeDefined();
-});
-
-// Bad - missing async/await
-it('should handle async operations', () => {
-  const result = repository.findNearestStation(40, -74);
-  expect(result).toBeDefined(); // This will fail!
-});
+```bash
+npm test -- seasonalObservationRepository
+npm test -- --runInBand
 ```
 
-### 4. Mocking external dependencies
-- Mock external APIs, databases, file systems
-- Reset mocks between tests
-- Verify mock interactions
-
-## Debugging tests
-
-### VS Code integration
-1. Install "Jest" extension
-2. Click the play button next to individual tests
-3. Set breakpoints in test files
-4. Use "Debug Test" from command palette
-
-### Console output
-```typescript
-it('should debug test', () => {
-  console.log('Debug info:', someValue);
-  expect(someValue).toBeDefined();
-});
-```
-
-## Test-driven development
-
-1. **Red**: Write a failing test first
-2. **Green**: Write minimal code to make it pass
-3. **Refactor**: Improve the code while keeping tests green
-
-```typescript
-// 1. RED - Write failing test first
-it('should calculate distance between stations', () => {
-  const distance = station1.distanceTo(station2);
-  expect(distance).toBeCloseTo(100.5, 1);
-});
-
-// 2. GREEN - Implement method to make test pass
-// 3. REFACTOR - Improve implementation
-```
-
-This setup gives you the same core testing habits you may already use in C#, adapted to the TypeScript toolchain.
+For difficult failures, inspect the failing expectation and any mocked inputs. Temporary logging is fine while debugging, but remove it before committing.
