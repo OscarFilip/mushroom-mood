@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:debug": "node --inspect node_modules/next/dist/bin/next dev --turbopack",
     "build": "next build",
     "build:vercel": "npm run db:migrate && next build",
     "start": "next start",
